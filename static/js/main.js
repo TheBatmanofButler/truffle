@@ -1,8 +1,8 @@
 $(".file-tree li").click(function (e) {
 	e.preventDefault();
 	e.stopPropagation();
-	console.log($(this).children(), $(this).text())
-	$(this).children().animate({
+	$(this).children().not("i").animate({
 		height: "toggle"
 	})
+	$(this).children("i").toggleClass("right");
 });

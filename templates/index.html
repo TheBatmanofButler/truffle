@@ -15,14 +15,14 @@
 				<ul class="primary">
 					<li>
 						{%- if tree.children -%}
-							<span class="arrow">></span>
+							<i class="arrow"></i>
 						{%- endif %}
 						{{ tree.short_name }}
 						<ul class="secondary">
 						{%- for item in tree.children recursive %}
 						    <li>
 								{%- if item.children -%}
-									<span class="arrow">></span>
+									<i class="arrow"></i>
 								{%- endif %}
 						    	{{ item.short_name }}
 							    {%- if item.children -%}
