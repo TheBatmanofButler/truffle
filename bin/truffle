@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+import truffle
+
+print truffle.helloworld()

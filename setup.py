@@ -13,4 +13,6 @@ setup(name='truffle',
       packages=['truffle'],
       dependency_links=[],
       install_requires=[],
+      include_package_data=True,
+      scripts=['bin/truffle'],
       zip_safe=False)
