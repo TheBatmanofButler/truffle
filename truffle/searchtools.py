@@ -68,4 +68,7 @@ def index_code(code_dir, index_fname='function_index.json'):
     return indexed_functions
 
 if __name__=='__main__':
+    print 'running test on . dir'
+    print 'testing languages: %s' % str(gc.SUPPORTED_LANGS)
     index_code('.')
+    print 'output at function_index.json'

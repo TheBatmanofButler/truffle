@@ -74,7 +74,7 @@ class PyParser(Parser):
                 'fname': self.fname
             }
 
-            functions[self.fname + '.' + node.name '.' node.lineno] = func
+            functions[self.fname + '.' + node.name + '.' + node.lineno] = func
 
         return functions
 
