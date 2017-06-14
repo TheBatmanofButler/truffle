@@ -14,7 +14,8 @@ li {
 .file-tree {
 	background-color: #F9E8C0;
 	width: 20%;
-	overflow-x: scroll;
+	height: 100%;
+	overflow: scroll;
 }
 
 i {
