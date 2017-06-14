@@ -2,3 +2,17 @@ html, body {
 	padding: 0;
 	margin: 0;
 }
+
+ul {
+	list-style: none;
+	cursor: default;
+}
+li {
+	margin-left: -20px;
+}
+
+.file-tree {
+	background-color: #F9E8C0;
+	width: 20%;
+	overflow-x: scroll;
+}

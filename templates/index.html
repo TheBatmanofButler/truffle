@@ -11,22 +11,30 @@
 	<body>
 
 		<div class="container">
-			<div class="doc-panel">
-				<div class="header">
-					<div class="logo">
-						<img src="../static/img/Github.png">
-					</div>
-					<div class="heading">Introduction</div>
-				</div>
-				<div class="content">Stuff about Twitter</div>
-			</div>
-
-			<div class="text-console-panel">
-				<div class="text-panel">
-					<textarea class="code-input"></textarea>
-				</div>
-
-				<div class="console-panel">g</div>
+			<div class="file-tree">
+				<ul class="primary">
+					<li>
+						{%- if tree.children -%}
+							<span class="arrow">></span>
+						{%- endif %}
+						{{ tree.short_name }}
+						<ul class="secondary">
+						{%- for item in tree.children recursive %}
+						    <li>
+								{%- if item.children -%}
+									<span class="arrow">></span>
+								{%- endif %}
+						    	{{ item.short_name }}
+							    {%- if item.children -%}
+							    	<ul>
+							    		{{ loop(item.children) }}
+							    	</ul>
+							    {%- endif %}
+							</li>
+						{%- endfor %}
+						</ul>
+					</li>
+				</ul>
 			</div>
 		</div>
 
