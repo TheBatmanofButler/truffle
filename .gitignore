@@ -1,4 +1,7 @@
 *pyc
+*swp
+*tfl
+*json
 
 /dist/
 

@@ -12,12 +12,8 @@ class Parser(object):
 
     def __init__(self, fname):
         if not fname.endswith(self.FILE_TYPE):
-            raise ValueError('Not a python file.')
+            raise ValueError('Not a python file', fname)
         self.fname = fname
 
-    def get_function_calls(self):
+    def index_functions(self):
         raise NotImplementedError
-
-    def get_function_defs(self):
-        raise NotImplementedError
-

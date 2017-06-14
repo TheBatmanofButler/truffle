@@ -9,7 +9,19 @@ from parser import Parser
 def _get_name(node):
 
     if isinstance(node.func, ast.Attribute):
-        return (node.func.attr, 'False')
+        name = ''
+        node = node.func
+        while not isinstance(node, ast.Name):
+            if isinstance(node, ast.Call):
+                node = node.func
+            elif isinstance(node, ast.Attribute):
+                name = node.attr + '.' + name if len(name) else node.attr
+                node = node.value
+            elif isinstance(node, ast.Subscript):
+                node = node.value
+
+        name = (node.id + '.' + name) if len(name) else node.id
+        return (name, 'False')
     else:
         return (node.func.id, 'True')
 
@@ -25,26 +37,45 @@ class PyParser(Parser):
         self.fname = fname
         self.root = ast.parse(open(fname, 'r').read())
 
-    def get_fname(self):
-        """ Returns file name """
-        return self.fname
-
-    def get_function_calls(self):
-        """ Gets functions from ast """
+    def _process_node_calls(self, nodelist):
+        """ Returns the names of the node calls """
         funcs = []
-        nodes = [node for node in ast.walk(self.root) if isinstance(node,
-                                                                    ast.Call)]
-        for node in nodes:
+        for node in nodelist:
             name, orig_file = _get_name(node)
             funcs.append((name, node.lineno, self.fname, orig_file))
         return funcs
 
+    def get_fname(self):
+        """ Returns file name """
+        return self.fname
+
+    def get_function_calls(self, func_node):
+        """ Gets functions called in a specific node """
+        return [node for node in ast.walk(func_node) 
+                if isinstance(node, ast.Call)]
+
     def get_function_defs(self):
         """ Gets function definitions from ast """
-        funcs = []
-        nodes = [node for node in ast.walk(self.root) if
-                 isinstance(node, ast.FunctionDef)]
-        for node in nodes:
-            funcs.append((node.name, node.lineno, self.fname))
-        return funcs
+        return [node for node in ast.walk(self.root) if
+                isinstance(node, ast.FunctionDef)]
+
+    def index_functions(self):
+        """ Populates function data structure for the file """
+        function_nodes = self.get_function_defs()
+
+        functions = {}
+        for node in function_nodes:
+            called_function_nodes = self.get_function_calls(node)
+            func = {
+                'called_functions': self._process_node_calls(
+                    called_function_nodes),
+                'lineno': node.lineno,
+                'name': node.name,
+                'fname': self.fname
+            }
+
+            functions[self.fname + '.' + node.name] = func
+
+        return functions
+
 
