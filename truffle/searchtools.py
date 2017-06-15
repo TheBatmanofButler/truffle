@@ -8,7 +8,7 @@ import os
 
 import parsers.pyparser as pyparser
 
-import truffle.global_constants as gc
+import global_constants as gc
 
 def _map_file_to_parser(fname):
     """
@@ -43,13 +43,13 @@ def _get_function_calls(parsers):
         functions.extend(parser.get_function_calls())
     return functions
 
-def _get_function_defs(parsers):
-    functions = []
+def _index_asts(parsers):
+    functions = {}
     for parser in parsers:
-        functions.extend(parser.get_function_defs())
+        functions.update(parser.index_functions())
     return functions
 
-def index_code(code_dir, index_fname='index.json'):
+def index_code(code_dir, index_fname='function_index.json'):
     """
     Gets files in code base and indexes in a json file, returns the list of
     tfl objects
@@ -60,10 +60,15 @@ def index_code(code_dir, index_fname='index.json'):
         raise ValueError('Cannot read any of the files in codebase.')
 
     parsers = _get_parsers(files)
-    function_calls = _get_function_calls(parsers)
-    print function_calls
-    function_defs = _get_function_defs(parsers)
-    print function_defs
+    indexed_functions = _index_asts(parsers)
+
+    with open(index_fname, 'w') as f:
+        json.dump(indexed_functions, f)
+
+    return indexed_functions
 
 if __name__=='__main__':
+    print 'running test on . dir'
+    print 'testing languages: %s' % str(gc.SUPPORTED_LANGS)
     index_code('.')
+    print 'output at function_index.json'
