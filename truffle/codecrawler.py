@@ -2,25 +2,27 @@ import ast, os
 
 class CodeCrawler:
 
-	def __init__(self, fname, files, functions):
+	def __init__(self, fname, files, functions, calls):
 		self.fname = fname
 		self.fname_short = fname[:-len(".py")]
 		self.root = ast.parse(open(fname, 'r').read())
 		self.files = files
 		self.functions = functions
+		self.calls = calls
 
 		self.get_functions(self.root, self.fname_short)
+		self.populate_called_functions()
 
-		blerg = self._get_function_calls(node)
-		g = []
-		for n in blerg:
-			for 
-			if self._get_name(n) in 
+	def _get_node_layer(self, node, is_for_calls):
+		node_layer = []
 
-	def _get_node_layer(self, node):
-		return [child for child in ast.iter_child_nodes(node)
-				if isinstance(child, ast.ClassDef) or
-				isinstance(child, ast.FunctionDef)]
+		for child in ast.iter_child_nodes(node):
+			if not is_for_calls and (isinstance(child, ast.ClassDef) or isinstance(child, ast.FunctionDef)):
+				node_layer.append(child)
+			elif is_for_calls and isinstance(child, ast.Call):
+				node_layer.append(child)
+
+		return node_layer
 
 	def _add_to_files(self, node, path):
 		if self.fname in self.files:
@@ -30,11 +32,13 @@ class CodeCrawler:
 
 	def _add_to_functions(self, node, path):
 
+		def adsfjkasf():
+			print "ok"
+
 		self.functions[path] = {
-					"name": node.name,
-					"lineno": node.lineno,
+					"node": node,
 					"fname": self.fname,
-					"called_functions": ""
+					"called_functions": []
 					}
 
 	def _update_path(self, node, path):
@@ -48,9 +52,9 @@ class CodeCrawler:
 		self._add_to_files(node, path_terminal)
 		self._add_to_functions(node, path_terminal)
 
-	def _get_function_calls(self, node):
-	    return [n for n in ast.walk(node)
-	            if isinstance(n, ast.Call)]
+	# def _get_function_calls(self, node):
+	#     return [n for n in ast.walk(node)
+	#             if isinstance(n, ast.Call)]
 
 	def _get_name(self, node):
 
@@ -76,7 +80,7 @@ class CodeCrawler:
 
 	def get_functions(self, node=None, path=None):
 
-		node_layer = self._get_node_layer(node)
+		node_layer = self._get_node_layer(node, False)
 
 		if isinstance(node, ast.ClassDef):
 			path = self._update_path(node, path)
@@ -91,3 +95,34 @@ class CodeCrawler:
 
 		for child in node_layer:
 			self.get_functions(child, path)
+
+	def _get_function_calls(self, funcnode=None, path=None):
+
+		node_layer = self._get_node_layer(funcnode, True)
+		# print node_layer
+		return node_layer
+		# if isinstance(node, ast.ClassDef):
+		# 	path = self._update_path(node, path)
+
+		# elif isinstance(node, ast.FunctionDef):
+		# 	self._record_function(node, path)
+
+		# 	if len(node_layer) == 0:
+		# 		return
+		# 	else:
+		# 		path = self._update_path(node, path)
+
+		# for child in node_layer:
+		# 	self.get_functions(child, path)
+
+	def populate_called_functions(self):
+
+
+		# blerg = self._get_function_calls(node)
+		# g = []
+		# for n in blerg:
+			# g.append(self._get_name(n))
+
+		for func in self.functions.values():
+			for call in self._get_function_calls(func["node"]):
+				print call
