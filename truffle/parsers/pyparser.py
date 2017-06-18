@@ -4,7 +4,7 @@ Description: Parser for .py files
 """
 
 import ast
-from parser_amol import Parser
+from parser import Parser
 
 def _get_name(node):
 
@@ -67,6 +67,7 @@ class PyParser(Parser):
         # TODO: find a way to ignore python default calls
         funcs = []
         imported_files, imported_functions = _process_imports(imports)
+        print imported_functions, imported_files
 
         for node in nodelist:
             name, orig_file = _get_name(node)
@@ -97,17 +98,6 @@ class PyParser(Parser):
         """ Gets function definitions from ast """
         return [node for node in ast.walk(self.root) if
                 isinstance(node, ast.FunctionDef)]
-
-    def get_class_defs(self):
-        """ Gets function definitions from ast """
-        return [node for node in ast.walk(self.root) if
-                isinstance(node, ast.ClassDef)]
-
-    def get_class_function_defs(self):
-        """ Gets function definitions from ast """
-        return [node for node in ast.walk(self.root) if
-                isinstance(node, ast.FunctionDef) or
-                isinstance(node, ast.ClassDef)]
 
     def get_imports(self):
         """ Gets a list of all of the imports in a file. """
@@ -140,23 +130,3 @@ class PyParser(Parser):
             functions['%s.%s' % (self.fname, node.name)] = func
 
         return functions
-
-    def index_classes(self):
-        """ Populates function data structure for the file """
-
-        class_nodes = self.get_class_defs()
-
-        classes = {}
-        for node in class_nodes:
-            print node.lineno, node.name
-            # class_obj = {
-            #     'called_functions': called_functions,
-            #     'lineno': node.lineno,
-            #     'calling_functions': [],
-            #     'name': node.name,
-            #     'fname': self.fname
-            # }
-
-            # functions['%s.%s' % (self.fname, node.name)] = func
-
-        # return functions

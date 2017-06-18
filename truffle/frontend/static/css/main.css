@@ -16,6 +16,7 @@ li {
 	width: 20%;
 	height: 100%;
 	overflow: scroll;
+	float: left;
 }
 
 i {
@@ -30,4 +31,27 @@ i {
 .right {
     transform: rotate(-45deg);
     -webkit-transform: rotate(-45deg);
+}
+
+.hidden {
+	display: none;
+}
+
+.code-text {
+	width: 40%;
+	float: left;
+}
+
+.function-name {
+	font-size: 15px;
+}
+
+.function-start-lineno {
+	font-size: 12px;
+}
+
+.code-text {
+	font-size: 10px;
+	height: 100%;
+	overflow-y: scroll;
 }

@@ -3,9 +3,12 @@
 	<head>
 		<title></title>
 
-		<script src="../static/js/jquery-3.1.1.min.js"></script>
+		<script src="{{ url_for('static', filename = 'js/jquery-3.1.1.min.js') }}"></script>
 
-		<link rel="stylesheet" type="text/css" href="../static/css/main.css">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/main.css') }}">
+
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/prism.css') }}">
+
 	</head>
 
 	<body>
@@ -14,17 +17,27 @@
 			<div class="file-tree">
 				<ul class="primary">
 					<li>
-						{%- if tree.children -%}
+						{%- if directory_tree.children -%}
 							<i class="arrow"></i>
 						{%- endif %}
-						{{ tree.short_name }}
+						{{ directory_tree.short_name }}
 						<ul class="secondary">
-						{%- for item in tree.children recursive %}
+						{%- for item in directory_tree.children recursive %}
 						    <li>
 								{%- if item.children -%}
 									<i class="arrow"></i>
 								{%- endif %}
-						    	{{ item.short_name }}
+
+								{%- if item.isPython -%}
+							    	<a href="{{ url_for('get_code', filename=item.name) }}">
+								    	{{ item.short_name }}
+							    	</a>
+							    {% else %}
+							    	<a>
+								    	{{ item.short_name }}
+								    </a>
+								{%- endif -%}
+
 							    {%- if item.children -%}
 							    	<ul>
 							    		{{ loop(item.children) }}
@@ -39,12 +52,32 @@
 
 
 			<div class="code-text">
-				{{ code_text }}
+<!-- 				{%- for function in functions_in_file %}
+					<div>
+						<div class="function-name">{{ function.name }}</div>
+						<div class="function-start-lineno">Line {{ function.lineno }}</div>
+						<div class="function-start-lineno">Line {{ function.fname }}</div>
+					</div>
+				{%- endfor %} -->
+				<table>
+				{% for key, value in indexed_functions.iteritems() %}
+				   <tr>
+				        <th> {{ key }} </th>
+				        <td> {{ value }} </td>
+				   </tr>
+				{% endfor %}
+				</table>
+				<!-- <pre>
+					<code class="language-python">
+						{{ code_text }}
+					<code>
+				<pre> -->
 			</div>
 
 		</div>
 
-		<script type="text/javascript" src="../static/js/main.js"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename = 'js/main.js') }}"></script>
+		<script type="text/javascript" src="{{ url_for('static', filename = 'js/prism.js') }}"></script>
 	</body>
 
 </html>
