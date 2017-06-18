@@ -56,6 +56,6 @@ def get_all_functions():
 	calls = {}
 
 	for fname in all_py_files:
-		CodeCrawler(fname, files, functions)
+		CodeCrawler(fname, files, functions, calls)
 
-	return functions
+	return calls
