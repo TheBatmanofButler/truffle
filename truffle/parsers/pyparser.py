@@ -60,14 +60,17 @@ class PyParser(Parser):
     def __init__(self, fname):
         super(PyParser, self).__init__(fname)
         self.fname = fname
-        self.root = ast.parse(open(fname, 'r').read())
+        try:
+            self.root = ast.parse(open(fname, 'r').read())
+        except SyntaxError:
+            print 'File %s has invalid syntax, cannot be indexed' % self.fname
+            self.root = None
 
     def _process_node_calls(self, nodelist, imports):
         """ Returns the names of the node calls """
         # TODO: find a way to ignore python default calls
         funcs = []
         imported_files, imported_functions = _process_imports(imports)
-        print imported_functions, imported_files
 
         for node in nodelist:
             name, orig_file = _get_name(node)

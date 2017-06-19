@@ -98,10 +98,10 @@ def get_func_def_loc(func_name, func_call_loc):
     # Get function def from map of files to functions
     # TODO Create way to index files to functions defined in that file
 
-# if __name__=='__main__':
-print 'running test on . dir'
-print 'testing languages: %s' % str(gc.SUPPORTED_LANGS)
-# TODO: Make a test folder
-#index_functions('/home/amol/Code/school/Oxford/Oxford-Reinforcement-Learning/final-proj')
-index_functions('.')
-print 'output at function_index.json'
+if __name__=='__main__':
+    print 'running test on . dir'
+    print 'testing languages: %s' % str(gc.SUPPORTED_LANGS)
+    # TODO: Make a test folder
+    #index_functions('/home/amol/Code/school/Oxford/Oxford-Reinforcement-Learning/final-proj')
+    index_functions('.')
+    print 'output at function_index.json'

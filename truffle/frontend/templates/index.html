@@ -52,26 +52,12 @@
 
 
 			<div class="code-text">
-<!-- 				{%- for function in functions_in_file %}
-					<div>
-						<div class="function-name">{{ function.name }}</div>
-						<div class="function-start-lineno">Line {{ function.lineno }}</div>
-						<div class="function-start-lineno">Line {{ function.fname }}</div>
-					</div>
-				{%- endfor %} -->
-				<table>
-				{% for key, value in indexed_functions.iteritems() %}
-				   <tr>
-				        <th> {{ key }} </th>
-				        <td> {{ value }} </td>
-				   </tr>
-				{% endfor %}
-				</table>
-				<!-- <pre>
-					<code class="language-python">
-						{{ code_text }}
-					<code>
-				<pre> -->
+
+				{%- for line in code_text %}
+				<div 'code-line'>
+					{{ line }}
+				</div>
+				{%- endfor %}
 			</div>
 
 		</div>
