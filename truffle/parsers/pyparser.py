@@ -88,12 +88,15 @@ class PyParser(Parser):
                 name = self.fname + '.' + name
 
             if name not in functions:
-                print name
                 continue
 
-            funcs.append((name, node.lineno, self.fname))
+            funcs.append((name, node.lineno))
 
         return funcs
+
+    def _process_func_defs(self, func_nodes):
+        """ Returns processed function names """
+        return [func.name for func in func_nodes]
 
     def get_fname(self):
         """ Returns file name """
@@ -109,6 +112,12 @@ class PyParser(Parser):
         return [node for node in ast.walk(self.root)
                 if isinstance(node, ast.Import) or isinstance(node,
                                                               ast.ImportFrom)]
+
+    def index_files(self):
+        """ Populates file data structure for the file"""
+        funcs_in_file = self.get_function_defs()
+        functions_in_file = self._process_func_defs(funcs_in_file)
+        return {self.fname : functions_in_file}
 
     def index_functions(self):
         """ Populates function data structure for the file """

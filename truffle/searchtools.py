@@ -37,6 +37,14 @@ def _get_files(code_dir):
         files.extend(filenames)
     return files
 
+
+def _index_files(parsers):
+    """ Return a map """
+    files = {}
+    for parser in parsers:
+        files.update(parser.index_files())
+    return files
+
 def _index_functions(parsers):
     """
     Returns a list of function objects (see wiki) without a populated field for
@@ -56,7 +64,8 @@ def _add_calling_functions(indexed_functions):
                     'calling_functions'].append(func_name)
     return indexed_functions
 
-def index_code(code_dir, index_fname='function_index.json'):
+def index_code(code_dir, func_index_fname='function_index.json',
+               file_index_fname='file_index.json'):
     """
     Gets files in code base and indexes in a json file, returns the list of
     tfl objects
@@ -69,35 +78,18 @@ def index_code(code_dir, index_fname='function_index.json'):
     parsers = _get_parsers(files)
     indexed_functions = _index_functions(parsers)
 
-    with open(index_fname, 'w') as f:
+    indexed_files = _index_files(parsers)
+
+    with open(func_index_fname, 'w') as f:
         json.dump(indexed_functions, f)
+    with open(file_index_fname, 'w') as f:
+        json.dump(indexed_files, f)
 
-    return indexed_functions
+    return indexed_functions, indexed_files
 
-def index_functions(code_dir, index_fname='function_index.json'):
-    """
-    Gets files in code base and indexes in a json file, returns the list of
-    tfl objects
-    """
-    files = _get_files(code_dir)
-
-    if len(files) == 0:
-        raise ValueError('Cannot read any of the files in codebase.')
-
-    parsers = _get_parsers(files)
-    indexed_functions = _index_functions(parsers)
-    # indexed_functions = _add_calling_functions(indexed_functions)
-
-    with open(index_fname, 'w') as f:
-        json.dump(indexed_functions, f)
-
-    return indexed_functions
-
-def get_func_def_loc(func_name, func_call_loc):
+def get_func_def_loc(func_name, functions):
     """ Gets the function definition location """
-    # Get function def from map of files to functions
-    # TODO Create way to index files to functions defined in that file
-    pass
+    return functions[func_name].fname, functions[func_name].lineno
 
 if __name__=='__main__':
     print 'running test on . dir'
