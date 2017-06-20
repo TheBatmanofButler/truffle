@@ -24,9 +24,9 @@ def _get_name(node):
 
         if isinstance(node, ast.Name):
             name = (node.id + '.' + name) if len(name) else node.id
-        return (name, 'False')
+        return name
     else:
-        return (node.func.id, 'True')
+        return node.func.id
 
 def _process_imports(imports):
     imported_files = {}
@@ -66,14 +66,16 @@ class PyParser(Parser):
             print 'File %s has invalid syntax, cannot be indexed' % self.fname
             self.root = None
 
-    def _process_node_calls(self, nodelist, imports):
+    def _process_node_calls(self, nodelist, imports, function_defs):
         """ Returns the names of the node calls """
-        # TODO: find a way to ignore python default calls
         funcs = []
         imported_files, imported_functions = _process_imports(imports)
 
         for node in nodelist:
-            name, orig_file = _get_name(node)
+            name = _get_name(node)
+
+            if name not in function_defs:
+                continue
 
             if name in imported_functions:
                 import_funcname, import_module = imported_functions[name]
@@ -83,13 +85,12 @@ class PyParser(Parser):
                 split_name = name.split('.')
                 if split_name[0] in imported_files:
                     new_mod_name = imported_files[split_name[0]]
-                    # TODO: find a way to check for file existence in the dir
                     split_name[0] = './' + '/'.join(new_mod_name.split('.')) + '.py'
                 name = '/'.join(split_name[:-1]) + '.' + split_name[-1]
             else:
                 name = self.fname + '.' + name
 
-            funcs.append((name, node.lineno, self.fname, orig_file))
+            funcs.append((name, node.lineno, self.fname))
 
         return funcs
 
@@ -120,7 +121,7 @@ class PyParser(Parser):
             called_function_nodes = _get_function_calls(node)
 
             called_functions = self._process_node_calls(called_function_nodes,
-                                                        imports)
+                                                        imports, function_nodes)
 
             func = {
                 'called_functions': called_functions,

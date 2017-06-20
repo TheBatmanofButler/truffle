@@ -97,6 +97,7 @@ def get_func_def_loc(func_name, func_call_loc):
     """ Gets the function definition location """
     # Get function def from map of files to functions
     # TODO Create way to index files to functions defined in that file
+    pass
 
 if __name__=='__main__':
     print 'running test on . dir'
