@@ -86,7 +86,7 @@ def index_functions(code_dir, index_fname='function_index.json'):
 
     parsers = _get_parsers(files)
     indexed_functions = _index_functions(parsers)
-    indexed_functions = _add_calling_functions(indexed_functions)
+    # indexed_functions = _add_calling_functions(indexed_functions)
 
     with open(index_fname, 'w') as f:
         json.dump(indexed_functions, f)

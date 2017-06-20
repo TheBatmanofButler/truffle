@@ -66,16 +66,13 @@ class PyParser(Parser):
             print 'File %s has invalid syntax, cannot be indexed' % self.fname
             self.root = None
 
-    def _process_node_calls(self, nodelist, imports, function_defs):
+    def _process_node_calls(self, nodelist, imports, functions):
         """ Returns the names of the node calls """
         funcs = []
         imported_files, imported_functions = _process_imports(imports)
 
         for node in nodelist:
             name = _get_name(node)
-
-            if name not in function_defs:
-                continue
 
             if name in imported_functions:
                 import_funcname, import_module = imported_functions[name]
@@ -89,6 +86,10 @@ class PyParser(Parser):
                 name = '/'.join(split_name[:-1]) + '.' + split_name[-1]
             else:
                 name = self.fname + '.' + name
+
+            if name not in functions:
+                print name
+                continue
 
             funcs.append((name, node.lineno, self.fname))
 
@@ -117,16 +118,20 @@ class PyParser(Parser):
         function_nodes = self.get_function_defs()
 
         functions = {}
+
+        for node in function_nodes:
+            functions['%s.%s' % (self.fname, node.name)] = {}
+
         for node in function_nodes:
             called_function_nodes = _get_function_calls(node)
 
             called_functions = self._process_node_calls(called_function_nodes,
-                                                        imports, function_nodes)
+                                                        imports, functions)
 
             func = {
                 'called_functions': called_functions,
                 'lineno': node.lineno,
-                'calling_functions': [],
+                # 'calling_functions': [],
                 'name': node.name,
                 'fname': self.fname
             }
