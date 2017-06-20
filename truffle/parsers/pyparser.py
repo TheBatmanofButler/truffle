@@ -105,7 +105,8 @@ class PyParser(Parser):
     def get_function_defs(self):
         """ Gets function definitions from ast """
         return [node for node in ast.walk(self.root) if
-                isinstance(node, ast.FunctionDef)]
+                isinstance(node, ast.FunctionDef) or isinstance(node,
+                                                                ast.ClassDef)]
 
     def get_imports(self):
         """ Gets a list of all of the imports in a file. """
