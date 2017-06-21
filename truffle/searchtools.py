@@ -6,14 +6,17 @@ Description: Provides API for handling indexed code base.
 import json
 import os
 
-import parsers.pyparser as pyparser
-
 import global_constants as gc
+import parsers.pyparser as pyparser
+import text_index
 
 def _map_file_to_parser(fname):
     """
     Return the right parser function.
     """
+    # TODO: Make this do the right thing; right now only does python.
+    if not fname.endswith('py'):
+        raise ValueError('file type not implemented; check _map_file_to_parser')
     return pyparser.PyParser(fname)
 
 def _get_parsers(files):
@@ -72,6 +75,8 @@ def index_code(code_dir, func_index_fname='function_index.json',
     """
     files = _get_files(code_dir)
 
+    text_searcher = text_index.index_text(files)
+
     if len(files) == 0:
         raise ValueError('Cannot read any of the files in codebase.')
 
@@ -85,11 +90,15 @@ def index_code(code_dir, func_index_fname='function_index.json',
     with open(file_index_fname, 'w') as f:
         json.dump(indexed_files, f)
 
-    return indexed_functions, indexed_files
+    return indexed_functions, indexed_files, text_searcher
 
 def get_func_def_loc(func_name, functions):
     """ Gets the function definition location """
     return functions[func_name].fname, functions[func_name].lineno
+
+def get_text_search(text_searcher, query):
+    """ Gets the text search hits """
+    return text_index.search_text(text_searcher, query)
 
 if __name__=='__main__':
     print 'running test on . dir'
