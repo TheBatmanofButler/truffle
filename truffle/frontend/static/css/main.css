@@ -1,6 +1,9 @@
 html, body {
 	padding: 0;
 	margin: 0;
+
+	height: 100%;
+	width: 100%;
 }
 
 ul {
@@ -11,12 +14,19 @@ li {
 	margin-left: -20px;
 }
 
-.file-tree {
+.container {
+	display: flex;
+	flex-flow: row wrap;
+
+	width: 100%;
+	height: 100%;
+}
+
+.file-panel {
 	background-color: #F9E8C0;
-	width: 20%;
+	width: 15%;
 	height: 100%;
 	overflow: scroll;
-	float: left;
 }
 
 i {
@@ -37,11 +47,6 @@ i {
 	display: none;
 }
 
-.code-text {
-	width: 40%;
-	float: left;
-}
-
 .function-name {
 	font-size: 15px;
 }
@@ -50,8 +55,84 @@ i {
 	font-size: 12px;
 }
 
+.button-comment-panel {
+	display: flex;
+	flex-flow: row wrap;
+
+	background-color: yellow;
+	position: relative;
+
+	height: 100%;
+	width: 25%;
+
+	/*display: none;*/
+}
+
+.code-panel {
+	width: 60%;
+}
+
 .code-text {
+	background-color: red;
+
+	float: left;
+
 	font-size: 10px;
 	height: 100%;
 	overflow-y: scroll;
+
+	display: none;
+}
+
+.flow-tree {
+	width: 100%;
+	height: 100%;
+	overflow-y: scroll;
+	background-color: blue;
+}
+
+.end-scan-option {
+	display: none;
+}
+
+.save-option {
+	display: none;
+}
+
+.button {
+	float: left;
+	width: 30%;
+	height: 40px;
+
+	vertical-align: middle;
+	line-height: 2.5;
+	font-size: 16px;
+	white-space: nowrap;
+	text-align: center;
+
+	margin-left: 13%;
+	margin-bottom: 5%;
+	background-color: red;
+}
+
+.left-button {
+	/*float: left;*/
+}
+
+.right-button {
+	/*float: left;*/
+}
+
+.options-box {
+	position: absolute;
+	bottom: 5%;
+
+	width: 100%;
+}
+
+.comment-box {
+	background-color: red;
+
+	width: 100%;
+	height: 80%;
 }

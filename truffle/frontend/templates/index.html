@@ -1,3 +1,5 @@
+<!doctype html>
+
 <html>
 
 	<head>
@@ -14,56 +16,89 @@
 	<body>
 
 		<div class="container">
-			<div class="file-tree">
+			<div class="file-panel">
 				<ul class="primary">
 					<li>
-						{%- if directory_tree.children -%}
+
+            <!-- arrow for root -->
+						{%- if "children" in directory_tree -%}
 							<i class="arrow"></i>
 						{%- endif %}
-						{{ directory_tree.short_name }}
+						
+            <!-- name for root -->
+            {{ directory_tree.short_name }}
 						<ul class="secondary">
-						{%- for item in directory_tree.children recursive %}
-						    <li>
-								{%- if item.children -%}
-									<i class="arrow"></i>
-								{%- endif %}
 
-								{%- if item.isPython -%}
-							    	<a href="{{ url_for('get_code', filename=item.name) }}">
-								    	{{ item.short_name }}
-							    	</a>
-							    {% else %}
-							    	<a>
-								    	{{ item.short_name }}
-								    </a>
-								{%- endif -%}
+              <!-- iterate through directory_tree -->
+  						{%- for item in directory_tree.children recursive %}
+  						    <li>
 
-							    {%- if item.children -%}
-							    	<ul>
-							    		{{ loop(item.children) }}
-							    	</ul>
-							    {%- endif %}
-							</li>
-						{%- endfor %}
+                    <!-- show arrow if directory with children -->
+    								{%- if "children" in item -%}
+    									<i class="arrow"></i>
+                      {{ item.short_name }}
+                      <!-- run loop for children of item -->
+                      <ul>
+                        {{ loop(item.children) }}
+                      </ul>
+  
+                    {% else %}
+                      <!-- link for name of item -->
+    						    	<a href="{{ url_for('get_code', filename=item.name[1:]) }}">
+    							    	{{ item.short_name }}
+    						    	</a>
+                    {%- endif %}
+
+    							</li>
+  						{%- endfor %}
 						</ul>
 					</li>
 				</ul>
 			</div>
 
+			<div class="code-panel">
+				<div class="code-text">
+					<div class="code-text-path">
+						/path/to/file
+					</div>
+					<code>
 
-			<div class="code-text">
+						{%- for line in code_html %}
+						<div class="code-line">
+							{{ line }}
+						</div>
+						{%- endfor %}
 
-				{%- for line in code_text %}
-				<div 'code-line'>
-					{{ line }}
+					</code>
 				</div>
-				{%- endfor %}
+
+				<div class="flow-tree">
+					d3 stuff
+				</div>
 			</div>
 
+			<div class="button-comment-panel">
+				<div class="comment-box">
+					<div class="welcome-text">
+						Truffle is a thing we made.
+					</div>
+					<div class="comment-name">
+					</div>
+					<div class="comment-params"></div>
+					<div class="comment-description"></div>
+					<div class="comment-retval"></div>
+				</div>
+
+				<div class="options-box">
+					<div class="button left-button start-scan-option">Scan</div>
+					<div class="end-scan-option">End Scan</div>
+					<div class="button right-button add-category-option">Add Category</div>
+					<div class="save-option">Save</div>
+				</div>
+			</div>
 		</div>
 
 		<script type="text/javascript" src="{{ url_for('static', filename = 'js/main.js') }}"></script>
-		<script type="text/javascript" src="{{ url_for('static', filename = 'js/prism.js') }}"></script>
 	</body>
 
 </html>

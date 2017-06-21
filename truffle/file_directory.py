@@ -1,66 +1,51 @@
-# from codecrawler import CodeCrawler
+"""
+Author: Ganesh Ravichandran
+Description: Functions to load and organize file directory
+"""
 
-import os, re
+import os
+import re
+import global_constants
 
-def get_short_name(long_name):
-	short_name = long_name.split("/")
-	short_name = short_name[len(short_name) - 1]
+def _get_short_name(long_name):
+    """Returns file name without directory path"""
 
-	return short_name
+    short_name = long_name.split("/")
+    short_name = short_name[len(short_name) - 1]
 
-def is_included(text):
-	include_list = [".py$"]
+    return short_name
 
-	for reg in include_list:
-		if re.search(reg, text):
-			return True
+def _is_included(text):
+    """Returns True if .py file, False otherwise"""
 
-	return False
+    for reg in global_constants.INCLUDE_LIST:
+    	if re.search(reg, text):
+    		return True
 
-def is_excluded(text):
-	exclude_list = [".git*", ".DS_Store", ".pyc$", "__pycache__"]
+    return False
 
-	for reg in exclude_list:
-		if re.search(reg, text):
-			return False
+def _is_excluded(text):
+    """Returns True if file should be excluded, False otherwise"""
 
-	return True
+    for reg in global_constants.EXCLUDE_LIST:
+    	if re.search(reg, text):
+    		return True
 
-def make_directory_tree(path):
-    all_py_files = []
-    print path, all_py_files
-    tree, all_py_files = make_directory_tree_helper(path, all_py_files)
-    return tree, all_py_files
+    return False
 
-def make_directory_tree_helper(path, all_py_files):
-    tree = {"name": path, "short_name": get_short_name(path), "children": []}
-    try:
-        lst = os.listdir(path)
-    except OSError:
-        print 'fff'
-        return tree, all_py_files
-    else:
-        for name in lst:
-            fn = os.path.join(path, name)
-            if os.path.isdir(fn):
-                if is_excluded(name):
-                    tree["children"].append(make_directory_tree_helper(fn, all_py_files)[0])
-            else:
-                if is_included(name):
-                    all_py_files.append(fn)
-                    tree["children"].append({"name": fn[1:],
-                                             "short_name": get_short_name(name),
-                                             "isPython": True})
-        return tree, all_py_files
+def get_directory_tree(path):
+    """Returns dictionary of .py files in the given directory"""
 
-def get_all_functions():
-	rootpath = os.getcwd()
-	directory_tree, all_py_files = make_directory_tree(rootpath)
-	files = {}
-	functions = {}
-	calls = {}
+    tree = {"name": path, "short_name": _get_short_name(path), "children": []}
 
-	for fname in all_py_files:
-		CodeCrawler(fname, files, functions, calls)
+    for name in os.listdir(path):
+        filename = os.path.join(path, name)
 
-	return calls
+        if os.path.isdir(filename):
+            if not _is_excluded(name):
+                tree["children"].append(get_directory_tree(filename))
+        else:
+            if _is_included(name):
+                tree["children"].append({"name": filename,
+                                         "short_name": _get_short_name(name)})
+    return tree
