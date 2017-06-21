@@ -68,6 +68,7 @@ class PyParser(Parser):
 
     def _process_node_calls(self, nodelist, imports, functions):
         """ Returns the names of the node calls """
+        # TODO: Add class to scope names for function calls - add var resolution
         funcs = []
         imported_files, imported_functions = _process_imports(imports)
 
@@ -96,6 +97,7 @@ class PyParser(Parser):
 
     def _process_func_defs(self, func_nodes):
         """ Returns processed function names """
+        # TODO: Find a way to add class for scope to function names - add var resolution
         return [func.name for func in func_nodes]
 
     def get_fname(self):
