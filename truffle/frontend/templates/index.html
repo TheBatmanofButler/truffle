@@ -7,9 +7,11 @@
 
 		<script src="{{ url_for('static', filename = 'js/jquery-3.1.1.min.js') }}"></script>
 
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/main.css') }}">
+		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/codemirror.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/main.css') }}">
 
-		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/prism.css') }}">
+    <script src="{{ url_for('static', filename = 'js/lib/codemirror.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'js/lib/python.js') }}"></script>
 
 	</head>
 
@@ -66,15 +68,7 @@
 					<div class="code-text-path">
 						/path/to/file
 					</div>
-					<code>
-
-						{%- for line in code_html %}
-						<div class="code-line">
-							{{ line }}
-						</div>
-						{%- endfor %}
-
-					</code>
+					<textarea id="editor">{{ code_text }}</textarea>
 				</div>
 			</div>
 

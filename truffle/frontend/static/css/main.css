@@ -23,7 +23,7 @@ li {
 }
 
 .file-panel {
-	/*background-color: #F9E8C0;*/
+	background-color: red;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -66,8 +66,8 @@ i {
 	display: flex;
 	flex-flow: row wrap;
 
-	/*background-color: yellow;*/
-	position: relative;
+	background-color: yellow;
+	/*position: relative;*/
 
 	height: 100%;
 	width: 25%;
@@ -76,7 +76,8 @@ i {
 }
 
 .code-panel {
-	width: 60%;
+	width: 75%;
+	overflow-x: scroll
 }
 
 .code-text {
@@ -87,12 +88,13 @@ i {
 	font-size: 10px;
 	overflow-y: scroll;
 
-	display: none;
+	/*display: none;*/
 }
 
 .flow-tree {
 	overflow-y: scroll;
 	/*background-color: blue;*/
+	display: none;
 }
 
 .end-scan-option {
@@ -104,9 +106,9 @@ i {
 }
 
 .button {
-	float: left;
-	width: 30%;
+	width: 10%;
 	height: 40px;
+	margin-left: 2%;
 
 	vertical-align: middle;
 	line-height: 2.5;
@@ -114,20 +116,21 @@ i {
 	white-space: nowrap;
 	text-align: center;
 
-	margin-left: 13%;
-	margin-bottom: 5%;
-	/*background-color: red;*/
+	background-color: red;
 }
 
 .left-button {
-	/*float: left;*/
+
 }
 
 .right-button {
-	/*float: left;*/
+
 }
 
 .options-box {
+	display: flex;
+	flex-flow: row wrap;
+
 	position: absolute;
 	bottom: 5%;
 
@@ -142,12 +145,23 @@ i {
 }
 
 .code-space {
-	width: 100%;
+	width: 60%;
 	height: 100%;
 
 	position: absolute;
 	top: 0;
 	left: 15%;
+
+	z-index: 0;
+}
+
+.CodeMirror {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	height: 90%;
+
+	font-size: 16px;
 
 	z-index: 0;
 }

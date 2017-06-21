@@ -6,3 +6,8 @@ $(".file-panel li").click(function (e) {
 	$(this).children("i").toggleClass("right");
 
 });
+
+var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
+    lineNumbers: true,
+    mode:  "python"
+});
