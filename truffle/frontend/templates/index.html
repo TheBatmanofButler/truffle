@@ -16,53 +16,53 @@
 	<body>
 
 		<div class="container">
-			<div class="file-panel">
-				<ul class="primary">
-					<li>
-
-            <!-- arrow for root -->
-						{%- if "children" in directory_tree -%}
-							<i class="arrow"></i>
-						{%- endif %}
-						
-            <!-- name for root -->
-            {{ directory_tree.short_name }}
-						<ul class="secondary">
-
-              <!-- iterate through directory_tree -->
-  						{%- for item in directory_tree.children recursive %}
-  						    <li>
-
-                    <!-- show arrow if directory with children -->
-    								{%- if "children" in item -%}
-    									<i class="arrow"></i>
-                      {{ item.short_name }}
-                      <!-- run loop for children of item -->
-                      <ul>
-                        {{ loop(item.children) }}
-                      </ul>
-  
-                    {% else %}
-                      <!-- link for name of item -->
-    						    	<a href="{{ url_for('get_code', filename=item.name[1:]) }}">
-    							    	{{ item.short_name }}
-    						    	</a>
-                    {%- endif %}
-
-    							</li>
-  						{%- endfor %}
-						</ul>
-					</li>
-				</ul>
-			</div>
 
 			<div class="code-panel">
-        <div id="handle"></div>
-        <div class="flow-tree">
+        <div class="file-panel">
+          <ul class="primary">
+            <li>
+
+              <!-- arrow for root -->
+              {%- if "children" in directory_tree -%}
+                <i class="arrow"></i>
+              {%- endif %}
+              
+              <!-- name for root -->
+              {{ directory_tree.short_name }}
+              <ul class="secondary">
+
+                <!-- iterate through directory_tree -->
+                {%- for item in directory_tree.children recursive %}
+                    <li>
+
+                      <!-- show arrow if directory with children -->
+                      {%- if "children" in item -%}
+                        <i class="arrow"></i>
+                        {{ item.short_name }}
+                        <!-- run loop for children of item -->
+                        <ul>
+                          {{ loop(item.children) }}
+                        </ul>
+    
+                      {% else %}
+                        <!-- link for name of item -->
+                        <a href="{{ url_for('get_code', filename=item.name[1:]) }}">
+                          {{ item.short_name }}
+                        </a>
+                      {%- endif %}
+
+                    </li>
+                {%- endfor %}
+              </ul>
+            </li>
+          </ul>
+        </div>
+
+        <div class="code-space flow-tree">
           d3 stuff
         </div>
 
-				<div class="code-text">
+				<div class="code-space code-text">
 					<div class="code-text-path">
 						/path/to/file
 					</div>

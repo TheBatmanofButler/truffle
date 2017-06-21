@@ -24,9 +24,16 @@ li {
 
 .file-panel {
 	/*background-color: #F9E8C0;*/
+	position: absolute;
+	top: 0;
+	left: 0;
+	resize: horizontal;
 	width: 15%;
+	max-width: 25%;
 	height: 100%;
 	overflow: scroll;
+
+	z-index: 1;
 }
 
 i {
@@ -78,15 +85,12 @@ i {
 	float: left;
 
 	font-size: 10px;
-	height: 100%;
 	overflow-y: scroll;
 
 	display: none;
 }
 
 .flow-tree {
-	width: 100%;
-	height: 100%;
 	overflow-y: scroll;
 	/*background-color: blue;*/
 }
@@ -135,4 +139,15 @@ i {
 
 	width: 100%;
 	height: 80%;
+}
+
+.code-space {
+	width: 100%;
+	height: 100%;
+
+	position: absolute;
+	top: 0;
+	left: 15%;
+
+	z-index: 0;
 }
