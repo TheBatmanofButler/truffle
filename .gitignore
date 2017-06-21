@@ -2,6 +2,7 @@
 *swp
 *tfl
 *json
+.DS_Store
 
 /dist/
 
