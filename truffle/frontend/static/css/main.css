@@ -23,7 +23,7 @@ li {
 }
 
 .file-panel {
-	background-color: #F9E8C0;
+	/*background-color: #F9E8C0;*/
 	width: 15%;
 	height: 100%;
 	overflow: scroll;
@@ -59,7 +59,7 @@ i {
 	display: flex;
 	flex-flow: row wrap;
 
-	background-color: yellow;
+	/*background-color: yellow;*/
 	position: relative;
 
 	height: 100%;
@@ -73,7 +73,7 @@ i {
 }
 
 .code-text {
-	background-color: red;
+	/*background-color: red;*/
 
 	float: left;
 
@@ -88,7 +88,7 @@ i {
 	width: 100%;
 	height: 100%;
 	overflow-y: scroll;
-	background-color: blue;
+	/*background-color: blue;*/
 }
 
 .end-scan-option {
@@ -112,7 +112,7 @@ i {
 
 	margin-left: 13%;
 	margin-bottom: 5%;
-	background-color: red;
+	/*background-color: red;*/
 }
 
 .left-button {
@@ -131,7 +131,7 @@ i {
 }
 
 .comment-box {
-	background-color: red;
+	/*background-color: red;*/
 
 	width: 100%;
 	height: 80%;

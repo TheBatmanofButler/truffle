@@ -1,6 +1,8 @@
 from flask import Flask, json, render_template, request
 from file_directory import get_directory_tree
 from searchtools import index_code
+
+import re
 import global_constants
 
 
@@ -27,6 +29,11 @@ def get_code(filename):
 
 def get_highlighted_code(code_line):
     return code_line
+
+def isCommentable(filename):
+    if re.search(global_constants.SUPPORTED_LANGS_REGEX, filename):
+        return True
+    return False
 
 if __name__ == "__main__":
     app.run(debug=True)

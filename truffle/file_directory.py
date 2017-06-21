@@ -46,6 +46,5 @@ def get_directory_tree(path):
                 tree["children"].append(get_directory_tree(filename))
         else:
             if _is_included(name):
-                tree["children"].append({"name": filename,
-                                         "short_name": _get_short_name(name)})
+                tree["children"].append({"name": filename, "short_name": _get_short_name(name)})
     return tree

@@ -4,6 +4,8 @@ Description: List of constants maintained for python backend.
 """
 SUPPORTED_LANGS = ('.py')
 
+SUPPORTED_LANGS_REGEX = (".py$")
+
 FILEPATH = "/Users/ganeshravichandran/Dropbox/Code/truffle/truffle"
 
 INCLUDE_LIST = [".py$", ".md$", ".txt$", ".js$", ".html$", ".htm$"]
