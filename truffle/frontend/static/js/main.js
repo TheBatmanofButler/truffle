@@ -11,3 +11,9 @@ var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
     lineNumbers: true,
     mode:  "python"
 });
+
+$('a').click( function (event){ 
+     console.log(this.href);
+     $(".flow-tree").animate({"height": 0});
+     event.preventDefault()
+});

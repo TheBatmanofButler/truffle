@@ -88,13 +88,16 @@ i {
 	font-size: 10px;
 	overflow-y: scroll;
 
-	/*display: none;*/
+	display: none;
 }
 
 .flow-tree {
+	position: absolute;
+	bottom: 0;
+
 	overflow-y: scroll;
-	/*background-color: blue;*/
-	display: none;
+	background-color: blue;
+	/*display: none;*/
 }
 
 .end-scan-option {
@@ -149,7 +152,6 @@ i {
 	height: 100%;
 
 	position: absolute;
-	top: 0;
 	left: 15%;
 
 	z-index: 0;
