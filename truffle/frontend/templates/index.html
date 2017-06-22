@@ -43,8 +43,11 @@
 
                 <!-- iterate through directory_tree -->
                 {%- for item in directory_tree.children recursive %}
-                    <li>
-
+                    {% if item.count_id %}
+                      <li id="item{{ item.count_id }}">
+                    {% else %}
+                      <li>
+                    {% endif %}
                       <!-- show arrow if directory with children -->
                       {%- if "children" in item -%}
                         <i class="arrow"></i>

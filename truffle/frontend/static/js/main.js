@@ -5,10 +5,13 @@ $(".file-panel li").click(function (e) {
 	})
 	$(this).children("i").toggleClass("right");
 
+	if ($(this).attr("id")) {
+		sessionStorage.selectedLink = $(this).attr("id")
+	}
+
 });
 
 $( document ).ready(function() {
-	console.log(21)
 	var mode;
 
 	if (filename.includes(".py")) {
@@ -29,5 +32,9 @@ $( document ).ready(function() {
 	  lineNumbers: true,
 	  mode: mode
 	});
+
+	if (sessionStorage.selectedLink) {
+		$("#" + sessionStorage.selectedLink).css("font-weight", "bold");
+	}
 
 });
