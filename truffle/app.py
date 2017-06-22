@@ -11,7 +11,7 @@ directory_tree = get_directory_tree(global_constants.FILEPATH)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("index.html", directory_tree=directory_tree)
+    return render_template("index.html", directory_tree=directory_tree, filename="", code_text="")
 
 @app.route("/get_code/<path:filename>", methods=["GET", "POST"])
 def get_code(filename):
@@ -19,7 +19,7 @@ def get_code(filename):
     with open("/" + filename, 'r') as f:
         code_text = f.read()
 
-    return render_template("index.html", directory_tree=directory_tree, code_text=code_text)
+    return render_template("index.html", directory_tree=directory_tree, filename=filename, code_text=code_text)
 
 def isCommentable(filename):
     if re.search(global_constants.SUPPORTED_LANGS_REGEX, filename):
