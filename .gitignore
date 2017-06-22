@@ -4,6 +4,8 @@
 *json
 .DS_Store
 
+indexdir
+
 /dist/
 
 /*.egg-info

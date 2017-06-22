@@ -41,22 +41,18 @@ def _get_files(code_dir):
     return files
 
 
-def _index_files(parsers):
-    """ Return a map """
-    files = {}
-    for parser in parsers:
-        files.update(parser.index_files())
-    return files
-
-def _index_functions(parsers):
+def _index_code(parsers):
     """
-    Returns a list of function objects (see wiki) without a populated field for
-    calling functions.
+    Returns a list of function objects and file objects.
     """
     functions = {}
+    files = {}
+    variables = {}
     for parser in parsers:
         functions.update(parser.index_functions())
-    return functions
+        files.update(parser.index_files())
+        variables.update(parser.index_variables())
+    return functions, files, None
 
 def _add_calling_functions(indexed_functions):
     """ Populates calling functions set for each defined function passed in"""
@@ -71,19 +67,21 @@ def index_code(code_dir, func_index_fname='function_index.json',
                file_index_fname='file_index.json'):
     """
     Gets files in code base and indexes in a json file, returns the list of
-    tfl objects
+    tfl objects.
     """
     files = _get_files(code_dir)
 
+    # Does text search before any other indexing.
     text_searcher = text_index.index_text(files)
 
     if len(files) == 0:
-        raise ValueError('Cannot read any of the files in codebase.')
+        print 'no files could be indexed beyond text search'
+        return {}, {}, text_searcher
 
     parsers = _get_parsers(files)
-    indexed_functions = _index_functions(parsers)
 
-    indexed_files = _index_files(parsers)
+    # Index functions -> function calls.
+    indexed_functions, indexed_files, indexed_vars = _index_code(parsers)
 
     with open(func_index_fname, 'w') as f:
         json.dump(indexed_functions, f)
@@ -105,5 +103,5 @@ if __name__=='__main__':
     print 'testing languages: %s' % str(gc.SUPPORTED_LANGS)
     # TODO: Make a test folder
     #index_functions('/home/amol/Code/school/Oxford/Oxford-Reinforcement-Learning/final-proj')
-    index_functions('.')
-    print 'output at function_index.json'
+    index_code('.')
+    print 'outputs in default .json files'
