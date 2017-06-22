@@ -19,7 +19,7 @@ def get_code(filename):
     with open("/" + filename, 'r') as f:
         code_text = f.read()
 
-    return code_text
+    return render_template("index.html", directory_tree=directory_tree, code_text=code_text)
 
 def isCommentable(filename):
     if re.search(global_constants.SUPPORTED_LANGS_REGEX, filename):

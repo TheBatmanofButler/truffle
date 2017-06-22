@@ -7,21 +7,10 @@ $(".file-panel li").click(function (e) {
 
 });
 
+console.log(codeText);
+
 var editor = CodeMirror(document.getElementById("editor"), {
-  value: "",
+  value: codeText,
   lineNumbers: true,
   mode: "python"
-});
-
-$('a').click( function (event){ 
-	event.preventDefault()
-
-	var link = this;
-
-	$.ajax(this.href).done(function (codeText) {
-		var filenameIndex = link.href.indexOf("get_code/") + 8;
-		var filename = link.href.substring(filenameIndex);
-		$(".code-text-path").text(filename);
-		editor.setValue(codeText)
-	});
 });
