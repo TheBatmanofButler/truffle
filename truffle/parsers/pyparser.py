@@ -116,6 +116,14 @@ class PyParser(Parser):
                 if isinstance(node, ast.Import) or isinstance(node,
                                                               ast.ImportFrom)]
 
+    def index_variables(self):
+        """ Populates variable data structure for the file """
+        x = [(node.id, node.lineno) for node in ast.walk(self.root)
+             if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)]
+        print self.fname
+        print x
+        return {}
+
     def index_files(self):
         """ Populates file data structure for the file"""
         funcs_in_file = self.get_function_defs()
@@ -145,7 +153,8 @@ class PyParser(Parser):
                 'lineno': node.lineno,
                 # 'calling_functions': [],
                 'name': node.name,
-                'fname': self.fname
+                'fname': self.fname,
+                'docstring': ast.get_docstring(node, clean=True)
             }
 
             functions['%s.%s' % (self.fname, node.name)] = func
