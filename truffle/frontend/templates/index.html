@@ -12,6 +12,8 @@
 
     <script src="{{ url_for('static', filename = 'js/lib/codemirror.js') }}"></script>
     <script src="{{ url_for('static', filename = 'js/lib/python.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'js/lib/javascript.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'js/lib/xml.js') }}"></script>
     
     <script>
       var codeText = {{ code_text | tojson | safe }};
