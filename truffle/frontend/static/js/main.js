@@ -7,13 +7,21 @@ $(".file-panel li").click(function (e) {
 
 });
 
-var editor = CodeMirror.fromTextArea(document.getElementById("editor"), {
-    lineNumbers: true,
-    mode:  "python"
+var editor = CodeMirror(document.getElementById("editor"), {
+  value: "",
+  lineNumbers: true,
+  mode: "python"
 });
 
 $('a').click( function (event){ 
-     console.log(this.href);
-     $(".flow-tree").animate({"height": 0});
-     event.preventDefault()
+	event.preventDefault()
+
+	var link = this;
+
+	$.ajax(this.href).done(function (codeText) {
+		var filenameIndex = link.href.indexOf("get_code/") + 8;
+		var filename = link.href.substring(filenameIndex);
+		$(".code-text-path").text(filename);
+		editor.setValue(codeText)
+	});
 });

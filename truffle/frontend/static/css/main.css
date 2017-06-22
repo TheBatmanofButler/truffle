@@ -88,7 +88,13 @@ i {
 	font-size: 10px;
 	overflow-y: scroll;
 
-	display: none;
+	/*display: none;*/
+}
+
+.code-text-path {
+	text-align: center;
+    padding: 2%;
+	font-size: 16px;
 }
 
 .flow-tree {
@@ -97,7 +103,7 @@ i {
 
 	overflow-y: scroll;
 	background-color: blue;
-	/*display: none;*/
+	display: none;
 }
 
 .end-scan-option {
@@ -157,7 +163,7 @@ i {
 	z-index: 0;
 }
 
-.CodeMirror {
+#editor {
 	position: absolute;
 	bottom: 0;
 	width: 100%;
