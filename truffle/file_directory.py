@@ -33,26 +33,24 @@ def _is_excluded(text):
 
     return False
 
-def _get_directory_tree(path, count):
+def _get_directory_tree(path):
     """Helper function for get_directory_tree"""
 
     tree = {"name": path, "short_name": _get_short_name(path), "children": []}
 
     for name in os.listdir(path):
         filename = os.path.join(path, name)
-
+        global_constants.COUNT_ID += 1
         if os.path.isdir(filename):
             if not _is_excluded(name):
-                tree["children"].append(_get_directory_tree(filename, count))
+                tree["children"].append(_get_directory_tree(filename))
         else:
             if _is_included(name):
-                tree["children"].append({"name": filename, "short_name": _get_short_name(name), "count_id": count})
-                count += 1
-                print count
+                tree["children"].append({"name": filename, "short_name": _get_short_name(name), "count_id": global_constants.COUNT_ID})
     return tree
 
 def get_directory_tree(path):
     """Returns dictionary of .py files in the given directory"""
 
-    count = 1
-    return _get_directory_tree(path, count)    
+    global_constants.COUNT_ID = 0
+    return _get_directory_tree(path)    
