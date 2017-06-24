@@ -43,8 +43,11 @@
 
                 <!-- iterate through directory_tree -->
                 {%- for item in directory_tree.children recursive %}
-                    <li>
-
+                    {% if item.count_id %}
+                      <li id="item{{ item.count_id }}">
+                    {% else %}
+                      <li>
+                    {% endif %}
                       <!-- show arrow if directory with children -->
                       {%- if "children" in item -%}
                         <i class="arrow"></i>
@@ -78,7 +81,6 @@
 					</div>
 					<div id="editor"></div>
 				</div>
-
 			</div>
 
 			<div class="button-comment-panel">
@@ -100,9 +102,32 @@
 					<div class="save-option">Save</div>
 				</div>
 			</div>
+
+      <div class="scan-panel pop-up-panel">
+        <div class="scan-down-option">
+          <div class="scan-option-title">Scan by file</div>
+          <div class="scan-file-animation"></div>
+          <div class="scan-option-subtitle">
+            Document your codebase from top to bottom, file by file
+          </div>
+        </div>
+        <div class="scan-flow-option">
+          <div class="scan-option-title">Scan by Flow Tree</div>
+          <div class="scan-flow-animation"></div>
+          <div class="scan-option-subtitle">
+            Document your codebase by following the flow of functions and classes
+          </div>
+        </div>
+      </div>
+
+      <div class="add-category-panel pop-up-panel">
+        stuff inside
+      </div>
+
 		</div>
 
 		<script type="text/javascript" src="{{ url_for('static', filename = 'js/main.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/dom.js') }}"></script>
 	</body>
 
 </html>

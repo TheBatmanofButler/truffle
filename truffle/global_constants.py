@@ -13,3 +13,5 @@ INCLUDE_LIST = [".py$", ".md$", ".txt$", ".js$", ".html$", ".htm$"]
 EXCLUDE_LIST = [".git*", ".DS_Store", ".pyc$", "__pycache__"]
 
 INDEX_DIR = './indexdir'
+
+COUNT_ID = 0
