@@ -5,25 +5,30 @@ Description: Parser for .py files
 
 import ast
 from parser import Parser
+from walker import VariableNodeWalker
 
 def _get_name(node):
+    name = ''
+    while not isinstance(node, ast.Name):
+        if isinstance(node, ast.Call):
+            node = node.func
+        elif isinstance(node, ast.Attribute):
+            name = node.attr + '.' + name if len(name) else node.attr
+            node = node.value
+        elif isinstance(node, ast.Subscript):
+            node = node.value
+        else:
+            break
+
+    if isinstance(node, ast.Name):
+        name = (node.id + '.' + name) if len(name) else node.id
+    return name
+
+def _get_function_name(node):
 
     if isinstance(node.func, ast.Attribute):
-        name = ''
         node = node.func
-        while not isinstance(node, ast.Name):
-            if isinstance(node, ast.Call):
-                node = node.func
-            elif isinstance(node, ast.Attribute):
-                name = node.attr + '.' + name if len(name) else node.attr
-                node = node.value
-            elif isinstance(node, ast.Subscript):
-                node = node.value
-            else:
-                break
-
-        if isinstance(node, ast.Name):
-            name = (node.id + '.' + name) if len(name) else node.id
+        name = _get_name(node)
         return name
     else:
         return node.func.id
@@ -50,7 +55,6 @@ def _get_function_calls(func_node):
     return [node for node in ast.walk(func_node)
             if isinstance(node, ast.Call)]
 
-
 class PyParser(Parser):
     """
     Python file parser.
@@ -73,7 +77,7 @@ class PyParser(Parser):
         imported_files, imported_functions = _process_imports(imports)
 
         for node in nodelist:
-            name = _get_name(node)
+            name = _get_function_name(node)
 
             if name in imported_functions:
                 import_funcname, import_module = imported_functions[name]
@@ -100,10 +104,6 @@ class PyParser(Parser):
         # TODO: Find a way to add class for scope to function names - add var resolution
         return [func.name for func in func_nodes]
 
-    def get_fname(self):
-        """ Returns file name """
-        return self.fname
-
     def get_function_defs(self):
         """ Gets function definitions from ast """
         return [node for node in ast.walk(self.root) if
@@ -118,11 +118,9 @@ class PyParser(Parser):
 
     def index_variables(self):
         """ Populates variable data structure for the file """
-        x = [(node.id, node.lineno) for node in ast.walk(self.root)
-             if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Store)]
-        print self.fname
-        print x
-        return {}
+        walker = VariableNodeWalker(self.fname)
+        walker.visit(self.root)
+        return walker.get_variables()
 
     def index_files(self):
         """ Populates file data structure for the file"""

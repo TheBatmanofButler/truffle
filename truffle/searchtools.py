@@ -52,7 +52,7 @@ def _index_code(parsers):
         functions.update(parser.index_functions())
         files.update(parser.index_files())
         variables.update(parser.index_variables())
-    return functions, files, None
+    return functions, files, variables
 
 def _add_calling_functions(indexed_functions):
     """ Populates calling functions set for each defined function passed in"""
@@ -76,7 +76,7 @@ def index_code(code_dir, func_index_fname='function_index.json',
 
     if len(files) == 0:
         print 'no files could be indexed beyond text search'
-        return {}, {}, text_searcher
+        return {}, {}, {}, text_searcher
 
     parsers = _get_parsers(files)
 
@@ -88,7 +88,7 @@ def index_code(code_dir, func_index_fname='function_index.json',
     with open(file_index_fname, 'w') as f:
         json.dump(indexed_files, f)
 
-    return indexed_functions, indexed_files, text_searcher
+    return indexed_functions, indexed_files, indexed_vars, text_searcher
 
 def get_func_def_loc(func_name, functions):
     """ Gets the function definition location """
