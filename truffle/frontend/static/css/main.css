@@ -183,7 +183,7 @@ i {
 	z-index: 0;
 }
 
-.scan-panel {
+.pop-up-panel {
 	display: none;
 	background-color: #fff;
 	overflow-y: scroll;

@@ -25,9 +25,10 @@ function setupCodeMirror() {
 }
 
 function bodyStyling() {
-    var boxDOM = $(".scan-panel");
+    var scanPanel = $(".scan-panel"),
+    	categoryPanel = $(".add-category-panel");
 
-    if (boxDOM.css("display") != "none") {
+    if ((scanPanel.css("display") != "none") || (categoryPanel.css("display") != "none")) {
 	    $(".code-panel, .button-comment-panel, .options-box").css("opacity", 1);
 	}
 	else {
@@ -36,22 +37,41 @@ function bodyStyling() {
 }
 
 function enableScanButton() {
-	console.log("enable");
 	var scanButton = $(".start-scan-option");
 	scanButton.click( function (e) {
 		bodyStyling();
 		$(".scan-panel").show();
 		disableScanButton();
+		// disableAddCategoryButton();
 		return false;
 	});
 	scanButton.css("cursor", "pointer");
 }
 
+function enableAddCategoryButton() {
+	console.log("enable");
+	var categoryButton = $(".add-category-option");
+	categoryButton.click( function (e) {
+		bodyStyling();
+		$(".add-category-panel").show();
+		// disableScanButton();
+		disableAddCategoryButton();
+		return false;
+	});
+	categoryButton.css("cursor", "pointer");
+}
+
 function disableScanButton() {
-	console.log("disable");
 	var scanButton = $(".start-scan-option");
 	scanButton.unbind();
 	scanButton.css("cursor", "default");
+}
+
+function disableAddCategoryButton() {
+	console.log("disable");
+	var categoryButton = $(".add-category-option");
+	categoryButton.unbind();
+	categoryButton.css("cursor", "default");
 }
 
 function setupFilePanel() {
