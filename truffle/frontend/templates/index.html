@@ -5,7 +5,8 @@
 	<head>
 		<title></title>
 
-		<script src="{{ url_for('static', filename = 'js/jquery-3.1.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename = 'js/jquery-3.1.1.min.js') }}"></script>
+		<script src="{{ url_for('static', filename = 'js/d3.v3.min.js') }}"></script>
 
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/codemirror.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/main.css') }}">
@@ -104,20 +105,25 @@
 			</div>
 
       <div class="scan-panel pop-up-panel">
-        <div class="scan-down-option">
+        <div class="scan-panel-option scan-file-option">
           <div class="scan-option-title">Scan by file</div>
-          <div class="scan-file-animation"></div>
+          <svg class="scan-file-animation"></svg>
           <div class="scan-option-subtitle">
             Document your codebase from top to bottom, file by file
           </div>
         </div>
-        <div class="scan-flow-option">
+        <div class="scan-panel-option scan-flow-option">
           <div class="scan-option-title">Scan by Flow Tree</div>
-          <div class="scan-flow-animation"></div>
+          <svg class="scan-flow-animation"></svg>
           <div class="scan-option-subtitle">
             Document your codebase by following the flow of functions and classes
           </div>
         </div>
+
+        <label class="scan-label">
+          <input type="checkbox" class="scan-checkbox">
+          <span>Skip functions and classes that are already documented</span>
+        </label>
       </div>
 
       <div class="add-category-panel pop-up-panel">
@@ -126,6 +132,7 @@
 
 		</div>
 
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/d3graphics.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename = 'js/main.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/dom.js') }}"></script>
 	</body>

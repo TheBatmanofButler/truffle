@@ -38,7 +38,11 @@ function bodyStyling() {
 
 function enableScanButton() {
 	var scanButton = $(".start-scan-option");
+	resetScanAnimation();
+	resetFlowAnimation();
 	scanButton.click( function (e) {
+		setupScanAnimation();
+		setupFlowAnimation();
 		bodyStyling();
 		$(".scan-panel").show();
 		disableScanButton();
