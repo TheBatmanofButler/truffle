@@ -138,7 +138,7 @@ class PyParser(Parser):
         functions = {}
 
         for node in function_nodes:
-            functions['%s.%s' % (self.fname, node.name)] = {}
+            functions['%s.%s.%d' % (self.fname, node.name, node.lineno)] = {}
 
         for node in function_nodes:
             called_function_nodes = _get_function_calls(node)
@@ -155,6 +155,6 @@ class PyParser(Parser):
                 'docstring': ast.get_docstring(node, clean=True)
             }
 
-            functions['%s.%s' % (self.fname, node.name)] = func
+            functions['%s.%s.%d' % (self.fname, node.name, node.lineno)] = func
 
         return functions

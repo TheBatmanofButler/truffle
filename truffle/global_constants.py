@@ -6,7 +6,7 @@ SUPPORTED_LANGS = ('.py')
 
 SUPPORTED_LANGS_REGEX = (".py$")
 
-FILEPATH = "/Users/ganeshravichandran/Dropbox/Code/truffle/truffle/"
+FILEPATH ="/home/amol/Code/1train/truffle/truffle/"
 
 INCLUDE_LIST = [".py$", ".md$", ".txt$", ".js$", ".html$", ".htm$"]
 
