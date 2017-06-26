@@ -21,21 +21,24 @@ a {
 
 .container {
 	display: flex;
-	flex-flow: row wrap;
+	/*flex-flow: row wrap;*/
 
 	width: 100%;
 	height: 100%;
 }
 
-.file-panel {
-	background-color: red;
-	position: absolute;
-	top: 0;
-	left: 0;
-	resize: horizontal;
-	width: 15%;
-	max-width: 25%;
+.main-panel {
+	flex-grow: 100;
+	/*width: 100%;*/
 	height: 100%;
+	overflow: hidden;
+	background-color: #151515;
+}
+
+.file-panel {
+	background-color: #E4FDE1;
+	width: 20%;
+	height: 98%;
 	overflow: scroll;
 
 	z-index: 1;
@@ -71,29 +74,41 @@ i {
 	display: flex;
 	flex-flow: row wrap;
 
-	background-color: yellow;
-	/*position: relative;*/
+	background-color: #226F54;
 
+	height: 40%;
+	width: 100%;
+
+	/*display: none;*/
+}
+
+.button {
+	width: 100%;
+	height: 25%;
+
+	vertical-align: middle;
+	line-height: 4.5;
+	text-align: center;
+
+	background-color: #E4FDE1;
+}
+
+.button:hover {
+	cursor: pointer;
+	opacity: 0.7;
+}
+
+.button svg {
+
+}
+
+.options-box {
+
+	width: 5%;
 	height: 100%;
-	width: 25%;
 
-	/*display: none;*/
-}
-
-.code-panel {
-	width: 75%;
-	overflow-x: scroll
-}
-
-.code-text {
-	/*background-color: red;*/
-
-	float: left;
-
-	font-size: 10px;
-	overflow-y: scroll;
-
-	/*display: none;*/
+	padding: 0;
+	margin: 0;
 }
 
 .code-text-path {
@@ -111,74 +126,22 @@ i {
 	display: none;
 }
 
-.end-scan-option {
-	display: none;
-}
+.comment-box-wrapper {
 
-.save-option {
-	display: none;
-}
+	width: 95%;
+	height: 100%;
 
-.button {
-	width: 10%;
-	height: 40px;
-	margin-left: 2%;
-
-	vertical-align: middle;
-	line-height: 2.5;
-	font-size: 16px;
-	white-space: nowrap;
-	text-align: center;
-
-	background-color: red;
-}
-
-.button:hover {
-	cursor: pointer;
-}
-
-.left-button {
-
-}
-
-.right-button {
-
-}
-
-.options-box {
-	display: flex;
-	flex-flow: row wrap;
-
-	position: fixed;
-	bottom: 5%;
-
-	width: 100%;
+	padding: 0;
+	margin: 0;
 }
 
 .comment-box {
-	/*background-color: red;*/
-
-	width: 100%;
-	height: 80%;
-}
-
-.code-space {
-	width: 60%;
-	height: 100%;
-
-	position: absolute;
-	left: 15%;
-
-	z-index: 0;
+	padding: 1%;
 }
 
 #editor {
-	position: absolute;
-	bottom: 0;
 	width: 100%;
-	height: 90%;
-
-	font-size: 16px;
+	height: 60%;
 
 	z-index: 0;
 }

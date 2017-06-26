@@ -20,7 +20,8 @@ function setupCodeMirror() {
 	var editor = CodeMirror(document.getElementById("editor"), {
 	  value: codeText,
 	  lineNumbers: true,
-	  mode: mode
+	  mode: mode,
+	  theme: "base16-dark"
 	});
 }
 
@@ -37,7 +38,7 @@ function bodyStyling() {
 }
 
 function enableScanButton() {
-	var scanButton = $(".start-scan-option");
+	var scanButton = $(".scan-option");
 	resetScanAnimation();
 	resetFlowAnimation();
 	scanButton.click( function (e) {
@@ -66,7 +67,7 @@ function enableAddCategoryButton() {
 }
 
 function disableScanButton() {
-	var scanButton = $(".start-scan-option");
+	var scanButton = $(".scan-option");
 	scanButton.unbind();
 	scanButton.css("cursor", "default");
 }
@@ -90,5 +91,9 @@ function setupFilePanel() {
 			sessionStorage.selectedLink = $(this).attr("id")
 		}
 
+	});
+
+	$(".files-option").click( function () {
+		$(".file-panel").animate({width: "toggle"});
 	});
 }

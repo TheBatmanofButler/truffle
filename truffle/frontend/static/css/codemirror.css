@@ -4,6 +4,9 @@
   /* Set height, width, borders, and global font properties here */
   font-family: monospace;
   color: black;
+
+  height: 100%;
+  width: 100%;
 }
 
 /* PADDING */

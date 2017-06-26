@@ -13,7 +13,7 @@ directory_tree = get_directory_tree(global_constants.FILEPATH)
 def index():
     return render_template("index.html", directory_tree=directory_tree, filename="", code_text="")
 
-@app.route("/get_code/<path:filename>", methods=["GET", "POST"])
+@app.route("/<path:filename>", methods=["GET", "POST"])
 def get_code(filename):
 
     with open("/" + filename, 'r') as f:

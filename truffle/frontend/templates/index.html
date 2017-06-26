@@ -9,6 +9,7 @@
 		<script src="{{ url_for('static', filename = 'js/d3.v3.min.js') }}"></script>
 
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/codemirror.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/base16-dark.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/main.css') }}">
 
     <script src="{{ url_for('static', filename = 'js/lib/codemirror.js') }}"></script>
@@ -27,81 +28,94 @@
 
 		<div class="container">
 
-			<div class="code-panel">
+      <div class="file-panel">
+        <ul class="primary">
+          <li>
 
-        <div class="file-panel">
-          <ul class="primary">
-            <li>
+            <!-- arrow for root -->
+            {%- if "children" in directory_tree -%}
+              <i class="arrow"></i>
+            {%- endif %}
+            
+            <!-- name for root -->
+            {{ directory_tree.short_name }}
+            <ul class="secondary">
 
-              <!-- arrow for root -->
-              {%- if "children" in directory_tree -%}
-                <i class="arrow"></i>
-              {%- endif %}
-              
-              <!-- name for root -->
-              {{ directory_tree.short_name }}
-              <ul class="secondary">
-
-                <!-- iterate through directory_tree -->
-                {%- for item in directory_tree.children recursive %}
-                    {% if item.count_id %}
-                      <li id="item{{ item.count_id }}">
+              <!-- iterate through directory_tree -->
+              {%- for item in directory_tree.children recursive %}
+                  {% if item.count_id %}
+                    <li id="item{{ item.count_id }}">
+                  {% else %}
+                    <li>
+                  {% endif %}
+                    <!-- show arrow if directory with children -->
+                    {%- if "children" in item -%}
+                      <i class="arrow"></i>
+                      {{ item.short_name }}
+                      <!-- run loop for children of item -->
+                      <ul>
+                        {{ loop(item.children) }}
+                      </ul>
+  
                     {% else %}
-                      <li>
-                    {% endif %}
-                      <!-- show arrow if directory with children -->
-                      {%- if "children" in item -%}
-                        <i class="arrow"></i>
+                      <!-- link for name of item -->
+                      <a href="{{ url_for('get_code', filename=item.name[1:]) }}">
                         {{ item.short_name }}
-                        <!-- run loop for children of item -->
-                        <ul>
-                          {{ loop(item.children) }}
-                        </ul>
-    
-                      {% else %}
-                        <!-- link for name of item -->
-                        <a href="{{ url_for('get_code', filename=item.name[1:]) }}">
-                          {{ item.short_name }}
-                        </a>
-                      {%- endif %}
+                      </a>
+                    {%- endif %}
 
-                    </li>
-                {%- endfor %}
-              </ul>
-            </li>
-          </ul>
+                  </li>
+              {%- endfor %}
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+			<div class="main-panel">
+
+				<div id="editor"></div>
+
+        <div class="button-comment-panel">
+
+          <div class="options-box">
+            <div class="button files-option">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 8 8">
+                <path d="M0 0v1h8v-1h-8zm0 2v1h8v-1h-8zm0 2v1h8v-1h-8zm0 2v1h6v-1h-6z" />
+              </svg>
+            </div>
+            <div class="button scan-option">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 8 8">
+                          <path d="M0 0v2h.5c0-.55.45-1 1-1h1.5v5.5c0 .28-.22.5-.5.5h-.5v1h4v-1h-.5c-.28 0-.5-.22-.5-.5v-5.5h1.5c.55 0 1 .45 1 1h.5v-2h-8z" />
+                        </svg>
+            </div>
+            <div class="button flow-option">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 8 8">
+                <path d="M6 0v1h-.5c-.35 0-.56.1-.78.38l-1.41 1.78-1.53-1.78c-.22-.26-.44-.38-.78-.38h-1v1h1c-.05 0 .01.04.03.03l1.63 1.91-1.66 2.06h-1v1h1c.35 0 .56-.1.78-.38l1.53-1.91 1.66 1.91c.22.26.44.38.78.38h.25v1l2-1.5-2-1.5v1h-.22c-.01-.01-.05-.04-.06-.03l-1.75-2.06 1.53-1.91h.5v1l2-1.5-2-1.5z"
+                />
+              </svg>
+            </div>
+            <div class="button search-option">
+              <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 8 8">
+                <path d="M3.5 0c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5c.59 0 1.17-.14 1.66-.41a1 1 0 0 0 .13.13l1 1a1.02 1.02 0 1 0 1.44-1.44l-1-1a1 1 0 0 0-.16-.13c.27-.49.44-1.06.44-1.66 0-1.93-1.57-3.5-3.5-3.5zm0 1c1.39 0 2.5 1.11 2.5 2.5 0 .66-.24 1.27-.66 1.72-.01.01-.02.02-.03.03a1 1 0 0 0-.13.13c-.44.4-1.04.63-1.69.63-1.39 0-2.5-1.11-2.5-2.5s1.11-2.5 2.5-2.5z"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <div class="comment-box-wrapper">
+            <div class="comment-box">
+              <div class="welcome-text">
+                Truffle is a thing we made.
+              </div>
+              <div class="comment-name">
+              </div>
+              <div class="comment-params"></div>
+              <div class="comment-description"></div>
+              <div class="comment-retval"></div>
+            </div>
+          </div>
+
         </div>
-
-        <div class="code-space flow-tree">
-          d3 stuff
-        </div>
-
-				<div class="code-space code-text">
-					<div class="code-text-path">
-            {{ filename }}
-					</div>
-					<div id="editor"></div>
-				</div>
-			</div>
-
-			<div class="button-comment-panel">
-				<div class="comment-box">
-					<div class="welcome-text">
-						Truffle is a thing we made.
-					</div>
-					<div class="comment-name">
-					</div>
-					<div class="comment-params"></div>
-					<div class="comment-description"></div>
-					<div class="comment-retval"></div>
-				</div>
-
-				<div class="options-box">
-					<div class="button left-button start-scan-option">Scan</div>
-					<div class="end-scan-option">End Scan</div>
-					<div class="button right-button add-category-option">Add Category</div>
-					<div class="save-option">Save</div>
-				</div>
 			</div>
 
       <div class="scan-panel pop-up-panel">
