@@ -17,3 +17,9 @@ class Parser(object):
 
     def index_functions(self):
         raise NotImplementedError
+
+    def index_files(self):
+        raise NotImplementedError
+
+    def index_variables(self):
+        raise NotImplementedError
