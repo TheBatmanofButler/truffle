@@ -6,6 +6,7 @@ function setDirectoryTreeLinkBackground() {
 
 function setupCodeMirror() {
 	var mode;
+	var codeMirrorLineNo = parseInt(getScanLineNo(window.location.href)) - 1;
 
 	if (filename.includes(".py")) {
 		mode = "python";
@@ -23,6 +24,12 @@ function setupCodeMirror() {
 	  mode: mode,
 	  theme: "base16-dark"
 	});
+
+	if (sessionStorage.scanOn) {
+		editor.getDoc().addLineClass(codeMirrorLineNo, "gutter", "selected-line-gutter");
+		editor.getDoc().addLineClass(codeMirrorLineNo, "background", "selected-line-background");
+		editor.scrollIntoView(codeMirrorLineNo, 1);
+	}
 }
 
 function setupFilePanel() {
@@ -45,11 +52,43 @@ function setupFilePanel() {
 }
 
 $(".scan-option").click( function (e) {
-	scanStart();
+	getScanPath();
 });
 
-function scanStart() {
+function getScanLineNo(url) {
+	var urlArray = url.split("."),
+		lineno = urlArray[urlArray.length - 1];
+
+	return lineno;
+}
+
+function getScanPathUrl(url) {
+	var filenameEndIndex = url.indexOf(".py") + 3,
+		filename = url.substring(0,filenameEndIndex),
+		lineno = getScanLineNo(url),
+		scanPathUrl = filename + "." + lineno;
+
+	return scanPathUrl;
+}
+
+function getScanPath() {
 	$.getJSON('/_get_scan_path', {}, function(data) {
-		console.log(data);
+		sessionStorage.scanPath = JSON.stringify(data);
+		sessionStorage.scanIndex = JSON.stringify(0);
+		runScan();
 	});
+}
+
+function openScanPath() {
+	var scanPath = JSON.parse(sessionStorage.scanPath);
+	var scanIndex = JSON.parse(sessionStorage.scanIndex);
+	var scanPathUrl = getScanPathUrl(scanPath[scanIndex]);
+
+	sessionStorage.scanIndex = JSON.stringify(scanIndex + 1);
+	window.open(scanPathUrl, "_self");
+}
+
+function runScan() {
+	sessionStorage.scanOn = true;
+	openScanPath();
 }
