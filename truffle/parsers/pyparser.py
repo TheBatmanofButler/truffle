@@ -25,13 +25,18 @@ def _get_name(node):
     return name
 
 def _get_function_name(node):
-
     if isinstance(node.func, ast.Attribute):
         node = node.func
         name = _get_name(node)
         return name
     else:
         return node.func.id
+
+def _get_function_args(node):
+    return [arg.id for arg in node.args.args]
+
+def _get_class_args(node):
+    return [_get_name(node) for node in node.bases]
 
 def _process_imports(imports):
     imported_files = {}
@@ -150,8 +155,13 @@ class PyParser(Parser):
                 # 'calling_functions': [],
                 'name': node.name,
                 'fname': self.fname,
-                'docstring': ast.get_docstring(node, clean=True)
+                'docstring': ast.get_docstring(node, clean=True),
             }
+
+            if isinstance(node, ast.FunctionDef):
+                func['args'] = _get_function_args(node)
+            elif isinstance(node, ast.ClassDef):
+                func['args'] = _get_class_args(node)
 
             functions['%s.%s.%d' % (self.fname, node.name, node.lineno)] = func
 
