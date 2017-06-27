@@ -1,6 +1,35 @@
 class Pet(object):
     
     def __init__(self, name, species):
+        """
+        Description:
+            does shit, does more shit. does a lot of shit.
+            i could go on for days about how much shit it does
+
+        Args:
+            big_table: An open Bigtable Table instance.
+            keys: A sequence of strings representing the key of each table row
+                to fetch.
+            other_silly_variable: Another optional variable, that has a much
+                longer name than the other args, and which does nothing.
+
+        Returns:
+            A dict mapping keys to the corresponding table row data
+            fetched. Each row is represented as a tuple of strings. For
+            example:
+
+            {'Serak': ('Rigel VII', 'Preparer'),
+             'Zim': ('Irk', 'Invader'),
+             'Lrrr': ('Omicron Persei 8', 'Emperor')}
+
+            If a key from the keys argument is missing from the dictionary,
+            then that row was not found in the table.
+
+        Raises:
+            None
+
+
+        """
         self.name = name
         self.species = species
 
