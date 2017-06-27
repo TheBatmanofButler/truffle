@@ -63,7 +63,7 @@
   
                     {% else %}
                       <!-- link for name of item -->
-                      <a href="{{ url_for('get_code', filename=item.name[1:], lineno=0) }}">
+                      <a href="{{ url_for('get_code', filename=item.name[1:], lineno=1) }}">
                         {{ item.short_name }}
                       </a>
                     {%- endif %}

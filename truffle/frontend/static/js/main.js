@@ -1,12 +1,14 @@
 function setDirectoryTreeLinkBackground() {
-	if (sessionStorage.selectedLink) {
-		$("#" + sessionStorage.selectedLink).css("font-weight", "bold");
+	var selectedLink = sessionStorage.getItem("selectedLink");
+	if (selectedLink) {
+		$("#" + selectedLink).css("font-weight", "bold");
 	}
 }
 
 function setupCodeMirror() {
 	var mode;
 	var codeMirrorLineNo = parseInt(getScanLineNo(window.location.href)) - 1;
+	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
 
 	if (filename.includes(".py")) {
 		mode = "python";
@@ -25,7 +27,7 @@ function setupCodeMirror() {
 	  theme: "base16-dark"
 	});
 
-	if (sessionStorage.scanOn) {
+	if (scanOn) {
 		editor.getDoc().addLineClass(codeMirrorLineNo, "gutter", "selected-line-gutter");
 		editor.getDoc().addLineClass(codeMirrorLineNo, "background", "selected-line-background");
 		editor.scrollIntoView(codeMirrorLineNo, 1);
@@ -41,7 +43,7 @@ function setupFilePanel() {
 		$(this).children("i").toggleClass("right");
 
 		if ($(this).attr("id")) {
-			sessionStorage.selectedLink = $(this).attr("id")
+			sessionStorage.setItem("selectedLink", $(this).attr("id"));
 		}
 
 	});
@@ -73,22 +75,22 @@ function getScanPathUrl(url) {
 
 function getScanPath() {
 	$.getJSON('/_get_scan_path', {}, function(data) {
-		sessionStorage.scanPath = JSON.stringify(data);
-		sessionStorage.scanIndex = JSON.stringify(0);
+		sessionStorage.setItem("scanPath", JSON.stringify(data));
+		sessionStorage.setItem("scanIndex", JSON.stringify(0));
 		runScan();
 	});
 }
 
 function openScanPath() {
-	var scanPath = JSON.parse(sessionStorage.scanPath);
-	var scanIndex = JSON.parse(sessionStorage.scanIndex);
+	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
+	var scanIndex = JSON.parse(sessionStorage.getItem("scanIndex"));
 	var scanPathUrl = getScanPathUrl(scanPath[scanIndex]);
 
-	sessionStorage.scanIndex = JSON.stringify(scanIndex + 1);
+	sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex + 1));
 	window.open(scanPathUrl, "_self");
 }
 
 function runScan() {
-	sessionStorage.scanOn = true;
+	sessionStorage.setItem("scanOn", JSON.stringify(true));
 	openScanPath();
 }
