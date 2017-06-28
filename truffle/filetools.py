@@ -97,9 +97,13 @@ def get_scan_path(directory_tree, indexed_files, indexed_functions):
             functions_from_file = indexed_files[node_name]
             for function_info in functions_from_file:
                 function_name = _get_name(node_name, function_info)
-                docstring = indexed_functions[function_name]["docstring"]
-                if needsDocumentation(docstring):
-                    scan_path.append(function_name)
+
+                # to be modded once we have a way to construct function keys with scope
+                for k in indexed_functions:
+                    if k.find(function_name) != -1 and k.find(node_name) != -1:
+                        docstring = indexed_functions[k]["docstring"]
+                        if needsDocumentation(docstring):
+                            scan_path.append(function_name)
 
         if "children" in node:
             for i in node["children"]:

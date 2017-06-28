@@ -191,6 +191,10 @@ i {
 	float: left;
 }
 
-.scan-checkbox {
+.selected-line-gutter {
+	background-color: #9CC4B2;
+}
 
+.selected-line-background {
+	background-color: rgba(156,196,178,0.4);
 }

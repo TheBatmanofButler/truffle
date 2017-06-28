@@ -22,6 +22,7 @@
     <script>
       var codeText = {{ code_text | tojson | safe }};
       var filename = {{ filename | tojson | safe }};
+      var lineno = {{ lineno | tojson | safe }};
       var directoryTree = {{ directory_tree | tojson | safe }};
     </script>
 
@@ -62,7 +63,7 @@
   
                     {% else %}
                       <!-- link for name of item -->
-                      <a href="{{ url_for('get_code', filename=item.name[1:]) }}">
+                      <a href="{{ url_for('get_code', filename=item.name[1:], lineno=1) }}">
                         {{ item.short_name }}
                       </a>
                     {%- endif %}
