@@ -141,7 +141,14 @@ class PyParser(Parser):
         """ Populates file data structure for the file"""
         funcs_in_file = self._get_function_nodes()
         functions_in_file = _process_func_defs(funcs_in_file)
-        return {self.fname : functions_in_file}
+        imports = self._get_imports()
+        imported_files, imported_functions = _process_imports(imports)
+        file_obj = {
+            'functions': functions_in_file,
+            'imported_files': imported_files,
+            'imported_functions': imported_functions
+        }
+        return {self.fname : file_obj}
 
     def index_functions(self):
         """ Populates function data structure for the file """

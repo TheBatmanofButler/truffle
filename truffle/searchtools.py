@@ -6,8 +6,10 @@ varying amounts of input data, fails gracefully.
 import text_index
 
 def get_func_def_loc(func_name, indexed_functions):
-    """Gets the function definition location given a func_name from a call."""
-    pass
+    """Gets the function definitions given a func_name from a call."""
+    if func_name in indexed_functions:
+        return indexed_functions[func_name]
+    else:
 
 def get_file_functions(fname, indexed_functions, indexed_files):
     """Gets a list of function objects that are defined in a file."""
