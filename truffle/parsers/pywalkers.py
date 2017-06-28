@@ -9,7 +9,7 @@ class VariableNodeWalker(ast.NodeVisitor):
     def __init__(self, fname):
         self.context = [fname]
         self.var_name = []
-        self.data = {} 
+        self.data = {}
     def get_data(self):
         return self.data
 
@@ -54,8 +54,8 @@ class FunctionNodeWalker(VariableNodeWalker):
         self.var_name.append(node.name)
         var_name = '.'.join(self.var_name)
         context = '.'.join(self.context)
-        self.data['%s.%s.%d' % (context, var_name,
-                                node.lineno)] = {'node': node}
+        self.data['%s.%d' % (var_name, node.lineno)] = {'node': node,
+                                                        'scope': context}
         self.context.append(node.name)
         self.generic_visit(node)
         self.context.pop()
@@ -65,8 +65,8 @@ class FunctionNodeWalker(VariableNodeWalker):
         self.var_name.append(node.name)
         var_name = '.'.join(self.var_name)
         context = '.'.join(self.context)
-        self.data['%s.%s.%d' % (context, var_name,
-                                node.lineno)] = {'node': node}
+        self.data['%s.%d' % (var_name, node.lineno)] = {'node': node,
+                                                        'scope': context}
         self.context.append(node.name)
         self.generic_visit(node)
         self.context.pop()

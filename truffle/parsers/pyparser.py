@@ -164,6 +164,7 @@ class PyParser(Parser):
                 'name': node.name,
                 'fname': self.fname,
                 'docstring': ast.get_docstring(node, clean=True),
+                'scope': node_obj['scope']
             }
 
             if isinstance(node, ast.FunctionDef):
