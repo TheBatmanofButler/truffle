@@ -64,7 +64,8 @@ def _add_calling_functions(indexed_functions):
     return indexed_functions
 
 def index_code(code_dir, func_index_fname='function_index.json',
-               file_index_fname='file_index.json'):
+               file_index_fname='file_index.json',
+               var_index_fname='var_index.json'):
     """
     Gets files in code base and indexes in a json file, returns the list of
     tfl objects.
@@ -87,6 +88,8 @@ def index_code(code_dir, func_index_fname='function_index.json',
         json.dump(indexed_functions, f)
     with open(file_index_fname, 'w') as f:
         json.dump(indexed_files, f)
+    with open(var_index_fname, 'w') as f:
+        json.dump(indexed_vars, f)
 
     return indexed_functions, indexed_files, indexed_vars, text_searcher
 

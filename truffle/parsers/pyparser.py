@@ -52,16 +52,17 @@ def _process_imports(imports):
     imported_files = {}
     imported_functions = {}
     for import_file in imports:
-        import_fname = import_file.names[0].name
-        import_asname = import_file.names[0].asname
-        if not import_asname:
-            import_asname = import_fname
-        if isinstance(import_file, ast.Import):
-            imported_files[import_asname] = import_fname
-        elif isinstance(import_file, ast.ImportFrom):
-            import_module = import_file.module
-            imported_functions[import_asname] = (import_fname,
-                                                 import_module)
+        print import_file.names
+        for alias in import_file.names:
+            name = alias.name
+            asname = alias.asname
+            if not asname:
+                asname = name
+            if isinstance(import_file, ast.Import):
+                imported_files[asname] = name
+            elif isinstance(import_file, ast.ImportFrom):
+                module = import_file.module
+                imported_functions[asname] = (name, module)
 
     return imported_files, imported_functions
 
