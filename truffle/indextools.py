@@ -10,14 +10,16 @@ import global_constants as gc
 import parsers.pyparser as pyparser
 import text_index
 
-def _map_file_to_parser(fname):
-    """
-    Return the right parser function.
-    """
-    # TODO: Make this do the right thing; right now only does python.
-    if not fname.endswith('py'):
-        raise ValueError('file type not implemented; check _map_file_to_parser')
-    return pyparser.PyParser(fname)
+
+def _get_files(code_dir):
+    """Gets a list of files that can be processed by truffle."""
+    files = []
+    for (dirpath, _, filenames) in os.walk(code_dir):
+        filenames = [os.path.join(dirpath, f) for f in filenames if
+                     f.endswith(gc.SUPPORTED_LANGS)]
+        files.extend(filenames)
+    return files
+
 
 def _get_parsers(files):
     """
@@ -29,30 +31,31 @@ def _get_parsers(files):
         parsers.append(parser)
     return parsers
 
-def _get_files(code_dir):
-    """
-    Gets a list of files that can be processed by truffle.
-    """
-    files = []
-    for (dirpath, _, filenames) in os.walk(code_dir):
-        filenames = [os.path.join(dirpath, f) for f in filenames if
-                     f.endswith(gc.SUPPORTED_LANGS)]
-        files.extend(filenames)
-    return files
-
 
 def _index_code(parsers):
     """
     Returns a list of function objects and file objects.
     """
     functions = {}
+    function_calls = {}
     files = {}
     variables = {}
     for parser in parsers:
-        functions.update(parser.index_functions())
-        files.update(parser.index_files())
-        variables.update(parser.index_variables())
-    return functions, files, variables
+        fu, fc, fi, va = parser.index_file()
+        functions.update(fu)
+        function_calls.update(fc)
+        files.update(fi)
+        variables.update(va)
+    return functions, function_calls, files, variables
+
+
+
+def _map_file_to_parser(fname):
+    """Return the right parser class."""
+    # TODO: Make this do the right thing; right now only does python.
+    if not fname.endswith('py'):
+        raise ValueError('file type not implemented; check _map_file_to_parser')
+    return pyparser.PyParser(fname)
 
 def index_code(code_dir, func_index_fname='function_index.json',
                file_index_fname='file_index.json',
@@ -83,11 +86,3 @@ def index_code(code_dir, func_index_fname='function_index.json',
         json.dump(indexed_vars, f)
 
     return indexed_functions, indexed_files, indexed_vars, text_searcher
-
-if __name__=='__main__':
-    print 'running test on . dir'
-    print 'testing languages: %s' % str(gc.SUPPORTED_LANGS)
-    # TODO: Make a test folder
-    #index_functions('/home/amol/Code/school/Oxford/Oxford-Reinforcement-Learning/final-proj')
-    index_code('.')
-    print 'outputs in default .json files'

@@ -87,10 +87,9 @@ class PyParser(Parser):
             print 'File %s has invalid syntax, cannot be indexed' % self.fname
             self.root = None
 
-    def _process_node_calls(self, nodelist, imports, functions):
+    def _process_node_calls(self, nodelist, imported_files, imported_functions):
         """ Returns the names of the node calls """
         funcs = []
-        imported_files, imported_functions = _process_imports(imports)
 
         for node in nodelist:
             name = _get_function_name(node)
@@ -112,10 +111,6 @@ class PyParser(Parser):
             # Otherwise just store function the call.
             else:
                 name = self.fname + '.' + name
-
-            # And finally skip over anything thats not user defined.
-            if name not in functions:
-                continue
 
             funcs.append((name, node.lineno))
 
@@ -155,6 +150,7 @@ class PyParser(Parser):
         """ Populates function data structure for the file """
 
         imports = self._get_imports()
+        imported_files, imported_functions = _process_imports(imports)
 
         functions = self._get_function_defs()
 
@@ -163,7 +159,8 @@ class PyParser(Parser):
             called_function_nodes = _get_function_calls(node)
 
             called_functions = self._process_node_calls(called_function_nodes,
-                                                        imports, functions)
+                                                        imported_files,
+                                                        imported_functions)
 
             func = {
                 'called_functions': called_functions,
@@ -189,3 +186,5 @@ class PyParser(Parser):
         walker = pywalkers.VariableNodeWalker(self.fname)
         walker.visit(self.root)
         return walker.get_data()
+
+    def index_file(self):
