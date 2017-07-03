@@ -54,15 +54,6 @@ def _index_code(parsers):
         variables.update(parser.index_variables())
     return functions, files, variables
 
-def _add_calling_functions(indexed_functions):
-    """ Populates calling functions set for each defined function passed in"""
-    for func_name, function in indexed_functions.iteritems():
-        for called_func_name in function['called_functions']:
-            if called_func_name[0] in indexed_functions:
-                indexed_functions[called_func_name[0]][
-                    'calling_functions'].append(func_name)
-    return indexed_functions
-
 def index_code(code_dir, func_index_fname='function_index.json',
                file_index_fname='file_index.json',
                var_index_fname='var_index.json'):
