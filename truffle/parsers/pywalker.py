@@ -14,10 +14,10 @@ def _get_node_name(node):
         elif isinstance(node, ast.Attribute):
             name = node.attr + '.' + name if len(name) else node.attr
             node = node.value
-        elif 'value' not in node:
-            break
-        else:
+        elif isinstance(node, ast.Subscript):
             node = node.value
+        else:
+            break
 
     if isinstance(node, ast.Name):
         name = (node.id + '.' + name) if len(name) else node.id
@@ -37,7 +37,7 @@ class FileWalker(ast.NodeVisitor):
     def __init__(self, fname):
         self.fname = fname
         self.context = []
-        self.var_name = []
+        self.var_name = [fname]
         self.functions = {}
         self.variables = {}
         self.imported_modules = {}
@@ -49,24 +49,42 @@ class FileWalker(ast.NodeVisitor):
         return (self.functions, self.variables, self.imported_modules,
                 self.imported_functions, self.calls)
 
+    def _check_imports(self, var_name):
+        """Recursively check to make sure all imports are handled."""
+        split_var_name = var_name.split('.')
+        for asname, info in self.imported_modules.iteritems():
+            if asname == split_var_name[0]:
+                split_var_name[0] = self._check_imports(info)
+                return  '.'.join(split_var_name)
+
+        for asname, info in self.imported_functions.iteritems():
+            if asname == var_name:
+                return self._check_imports(info[1]) + '.' + info[0]
+
+        return var_name
+
     def _get_var_name(self):
         """Get name from current var name list, checking against imports."""
 
-        # Handle direct imports.
-        if self.var_name and self.var_name[-1] in self.imported_functions:
+        # Handle direct imports, which only have a single function in the name.
+        if (len(self.var_name) == 2
+                and self.var_name[-1] in self.imported_functions):
             import_funcname, import_module = self.imported_functions[
                 self.var_name[-1]]
-            import_module = '/'.join(import_module.split('.')) + '.py'
-            return import_module + '.' + import_funcname
-        # Check to see if an import name exists in the variable name.
-        else:
+            import_module = self._check_imports(import_module)
+            import_module = import_module
             var_name_clone = list(self.var_name)
-            for asname, import_name in self.imported_modules.iteritems():
-                if asname == self.var_name[0]:
-                    import_name = import_name.split('.') + '.py'
-                    var_name_clone[0] = '/'.join(import_name)
-                    break
+            var_name_clone[0] = import_module
+            var_name_clone[-1] = import_funcname
             return '.'.join(var_name_clone)
+        # Check to see if an import name exists in the variable name.
+        elif len(self.var_name) > 1 and self.var_name[0] != self.fname:
+            var_name_clone = list(self.var_name)
+            base_name = self._check_imports(self.var_name[0])
+            var_name_clone[0] = base_name
+            return '.'.join(var_name_clone)
+
+        return '.'.join(self.var_name)
 
     def _process_import(self, node):
         """Process imports (asname - name) and store."""
@@ -98,8 +116,7 @@ class FileWalker(ast.NodeVisitor):
 
     def _process_call(self, node):
         """Process calls (imported call) and store."""
-        fake_name = '.'.join(self.var_name)
-        var_name = '%s.%s.%d' % (self.fname, fake_name, node.lineno)
+        var_name = '%s.%d' % ('.'.join(self.var_name), node.lineno)
         self.calls[var_name] = self._get_var_name()
         if self.context:
             last_context = self.context[-1]
@@ -107,8 +124,7 @@ class FileWalker(ast.NodeVisitor):
 
     def _process_variable(self, node):
         """Process variables (imported vars) and store."""
-        fake_name = '.'.join(self.var_name)
-        var_name = '%s.%s' % (self.fname, fake_name)
+        var_name = '.'.join(self.var_name)
         if var_name in self.variables:
             self.variables['%s.%d' % (var_name,
                                       node.lineno)] = self.variables[var_name]

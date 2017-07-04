@@ -21,7 +21,8 @@ class PyParser(object):
 
     def __init__(self, fname):
         super(PyParser, self).__init__(fname)
-        self.fname = fname
+        self.real_fname = fname
+        self.fname = fname.replace('/', '.')
         try:
             self.root = ast.parse(open(fname, 'r').read())
         except SyntaxError:
