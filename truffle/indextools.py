@@ -41,13 +41,17 @@ def _index_code(parsers):
     files = {}
     variables = {}
     for parser in parsers:
-        fu, fc, fi, va = parser.index_file()
-        functions.update(fu)
-        function_calls.update(fc)
-        files.update(fi)
-        variables.update(va)
-    return functions, function_calls, files, variables
+        (function_index, call_index, file_index,
+         variable_index) = parser.index_code()
 
+        functions.update(function_index)
+        function_calls.update(call_index)
+        files.update(file_index)
+        variables.update(variable_index)
+
+    # Add calling functions?
+
+    return functions, function_calls, files, variables
 
 
 def _map_file_to_parser(fname):
@@ -57,7 +61,9 @@ def _map_file_to_parser(fname):
         raise ValueError('file type not implemented; check _map_file_to_parser')
     return pyparser.PyParser(fname)
 
+
 def index_code(code_dir, func_index_fname='function_index.json',
+               call_index_fname='call_index.json',
                file_index_fname='file_index.json',
                var_index_fname='var_index.json'):
     """
@@ -73,16 +79,19 @@ def index_code(code_dir, func_index_fname='function_index.json',
         print 'no files could be indexed beyond text search'
         return {}, {}, {}, text_searcher
 
+    # Does the rest of the indexing.
     parsers = _get_parsers(files)
-
-    # Index functions -> function calls.
-    indexed_functions, indexed_files, indexed_vars = _index_code(parsers)
+    (indexed_functions, indexed_calls, indexed_files,
+     indexed_vars) = _index_code(parsers)
 
     with open(func_index_fname, 'w') as f:
         json.dump(indexed_functions, f)
     with open(file_index_fname, 'w') as f:
         json.dump(indexed_files, f)
+    with open(call_index_fname, 'w') as f:
+        json.dump(indexed_calls, f)
     with open(var_index_fname, 'w') as f:
         json.dump(indexed_vars, f)
 
-    return indexed_functions, indexed_files, indexed_vars, text_searcher
+    return (indexed_functions, indexed_calls, indexed_files, indexed_vars,
+            text_searcher)
