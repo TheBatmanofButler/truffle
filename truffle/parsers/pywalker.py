@@ -84,7 +84,8 @@ class FileWalker(ast.NodeVisitor):
             var_name_clone[0] = base_name
             return '.'.join(var_name_clone)
 
-        return '.'.join(self.var_name)
+        scoped_name = [self.var_name[0]] + self.context + self.var_name[1:]
+        return '.'.join(scoped_name)
 
     def _process_import(self, node):
         """Process imports (asname - name) and store."""
@@ -110,7 +111,7 @@ class FileWalker(ast.NodeVisitor):
             'name': node.name,
             'fname': self.fname,
             'docstring': ast.get_docstring(node, clean=True),
-            'scope': self.context,
+            'scope': '.'.join(self.context),
             'args': _get_args(node)
         }
 
@@ -119,21 +120,21 @@ class FileWalker(ast.NodeVisitor):
         var_name = '%s.%d' % ('.'.join(self.var_name), node.lineno)
         self.calls[var_name] = self._get_var_name()
         if self.context:
-            last_context = self.context[-1]
-            self.functions[last_context]['calls'][var_name] = node.lineno
+            last_scope = '%s.%s.%s' % (self.fname, '.'.join(self.context[:-1]),
+                                       self.context[-1])
+            self.functions[last_scope]['calls'][var_name] = node.lineno
 
     def _process_variable(self, node):
         """Process variables (imported vars) and store."""
-        var_name = '.'.join(self.var_name)
+        var_name = '%s.%d' % ('.'.join(self.var_name), node.lineno)
         if var_name in self.variables:
-            self.variables['%s.%d' % (var_name,
-                                      node.lineno)] = self.variables[var_name]
+            self.variables[var_name] = self.variables[var_name]
         else:
             self.variables[var_name] = self._get_var_name()
 
     def visit_FunctionDef(self, node):
         self._process_functiondef(node)
-        self.context.append(node)
+        self.context.append(node.name)
         self.generic_visit(node)
         self.context.pop()
 

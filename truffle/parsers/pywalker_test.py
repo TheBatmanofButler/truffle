@@ -103,7 +103,7 @@ class testPywalker(unittest.TestCase):
             'name': 'thisisatest',
             'fname': 'dummy_file',
             'docstring': 'this is a comment',
-            'scope': ['some', 'scope'],
+            'scope': 'some.scope',
             'args': ['arg1', 'arg2', 'arg3']
         }}
 
@@ -111,6 +111,110 @@ class testPywalker(unittest.TestCase):
          if isinstance(node, ast.FunctionDef)]
 
         self.assertDictEqual(walker.functions, true_func_obj)
+
+    def test_process_call(self):
+        root = _setup('test_data/test_process_call.py')
+        walker = pywalker.FileWalker('dummy_file')
+        walker.var_name = ['this', 'is', 'a', 'test']
+        walker.context = ['dummy', 'scope']
+        walker.functions = {'dummy_file.dummy.scope': {'calls': {}}}
+
+        [walker._process_call(node) for node in ast.walk(root)
+         if isinstance(node, ast.Call)]
+
+        self.assertDictEqual(walker.calls, {
+            'this.is.a.test.4': 'this.is.a.test',
+        })
+
+        self.assertDictEqual(walker.functions, {
+            'dummy_file.dummy.scope': {
+                'calls': {
+                    'this.is.a.test.4': 4
+                }
+            }
+        })
+
+    def test_process_variable(self):
+        root = _setup('test_data/test_process_variable.py')
+        walker = pywalker.FileWalker('dummy_file')
+        walker.var_name = ['this', 'is', 'a', 'test']
+        nodes = [node for node in ast.walk(root) if isinstance(node, ast.Name)]
+        self.assertEqual(len(nodes), 1)
+        node = nodes[0]
+        walker._process_variable(node)
+        walker._process_variable(node)
+        self.assertDictEqual(walker.variables, {
+            'this.is.a.test.1': 'this.is.a.test',
+        })
+
+    def test_visits(self):
+        walker = pywalker.FileWalker('test_data.test_walk')
+        root = _setup('test_data/test_walk.py')
+        walker.visit(root)
+        functions, var, import_files, import_funcs, calls = walker.get_data()
+
+        true_functions = {
+            'test_data.test_walk..thisisatest': {
+                'calls': {},
+                'lineno': 4,
+                'calling_functions': [],
+                'name': 'thisisatest',
+                'fname': 'test_data.test_walk',
+                'docstring': 'test',
+                'scope': '',
+                'args': ['arg1']
+            },
+            'test_data.test_walk..thisisatest2': {
+                'calls': {
+                    'test_data.test_walk.thisisatest.9': 9,
+                },
+                'lineno': 8,
+                'calling_functions': [],
+                'name': 'thisisatest2',
+                'fname': 'test_data.test_walk',
+                'docstring': None,
+                'scope': '',
+                'args': ['arg1']
+            },
+            'test_data.test_walk..Test': {
+                'calls': {},
+                'lineno': 11,
+                'calling_functions': [],
+                'name': 'Test',
+                'fname': 'test_data.test_walk',
+                'docstring': None,
+                'scope': '',
+                'args': ['object']
+            },
+            'test_data.test_walk.Test.thisisatest3': {
+                'calls': {},
+                'lineno': 13,
+                'calling_functions': [],
+                'name': 'thisisatest3',
+                'fname': 'test_data.test_walk',
+                'docstring': None,
+                'scope': 'Test',
+                'args': []
+            }
+        }
+
+        self.assertDictEqual(functions, true_functions)
+
+        # TODO(theahura): THIS DOESNT ACCOUNT FOR SCOPE
+        # see: arg1 in both function scopes not being treated separately.
+        # Find a way to incorporate context without breaking imported functions.
+        true_variables = {
+            'test_data.test_walk.arg1.4': 'test_data.test_walk.arg1',
+            'test_data.test_walk.arg1.8': 'test_data.test_walk.arg1'
+        }
+
+        print var
+        self.assertDictEqual(var, true_variables)
+
+        print import_files
+        print import_funcs
+        print calls
+
 
 if __name__ == '__main__':
     unittest.main()
