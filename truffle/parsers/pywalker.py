@@ -37,7 +37,7 @@ class FileWalker(ast.NodeVisitor):
     def __init__(self, fname):
         self.fname = fname
         self.context = []
-        self.var_name = [fname]
+        self.var_name = []
         self.functions = {}
         self.variables = {}
         self.imported_modules = {}
@@ -54,7 +54,10 @@ class FileWalker(ast.NodeVisitor):
         split_var_name = var_name.split('.')
         for asname, info in self.imported_modules.iteritems():
             if asname == split_var_name[0]:
-                split_var_name[0] = self._check_imports(info)
+                if asname == info:
+                    split_var_name[0] = info
+                else:
+                    split_var_name[0] = self._check_imports(info)
                 return  '.'.join(split_var_name)
 
         for asname, info in self.imported_functions.iteritems():
@@ -78,14 +81,15 @@ class FileWalker(ast.NodeVisitor):
             var_name_clone[-1] = import_funcname
             return '.'.join(var_name_clone)
         # Check to see if an import name exists in the variable name.
-        elif len(self.var_name) > 1 and self.var_name[0] != self.fname:
+        else:
             var_name_clone = list(self.var_name)
-            base_name = self._check_imports(self.var_name[0])
+            base_name = self._check_imports(var_name_clone[0])
+            if base_name == self.var_name[0]:
+                scoped_name = [self.fname] + self.context + self.var_name
+                return '.'.join(scoped_name)
             var_name_clone[0] = base_name
             return '.'.join(var_name_clone)
 
-        scoped_name = [self.var_name[0]] + self.context + self.var_name[1:]
-        return '.'.join(scoped_name)
 
     def _process_import(self, node):
         """Process imports (asname - name) and store."""
@@ -118,19 +122,26 @@ class FileWalker(ast.NodeVisitor):
     def _process_call(self, node):
         """Process calls (imported call) and store."""
         var_name = '%s.%d' % ('.'.join(self.var_name), node.lineno)
-        self.calls[var_name] = self._get_var_name()
+        true_var_name = self._get_var_name()
+        self.calls[var_name] = true_var_name
         if self.context:
             last_scope = '%s.%s.%s' % (self.fname, '.'.join(self.context[:-1]),
                                        self.context[-1])
-            self.functions[last_scope]['calls'][var_name] = node.lineno
+            self.functions[last_scope]['calls'][true_var_name] = node.lineno
 
     def _process_variable(self, node):
         """Process variables (imported vars) and store."""
-        var_name = '%s.%d' % ('.'.join(self.var_name), node.lineno)
+        var_name = '.'.join(self.var_name)
+        base_name = self._check_imports(self.var_name[0])
+        if base_name == self.var_name[0]:
+            var_name = '%s.%s.%s' % (self.fname, '.'.join(self.context),
+                                     var_name)
         if var_name in self.variables:
-            self.variables[var_name] = self.variables[var_name]
+            loaded_var_name = '%s.%d' % (var_name, node.lineno)
+            self.variables[loaded_var_name] = self.variables[var_name]
         else:
-            self.variables[var_name] = self._get_var_name()
+            self.variables[var_name] = '%s.%d' % (self._get_var_name(),
+                                                  node.lineno)
 
     def visit_FunctionDef(self, node):
         self._process_functiondef(node)
@@ -154,12 +165,15 @@ class FileWalker(ast.NodeVisitor):
         self.generic_visit(node)
         self.context.pop()
 
-    def vist_Attribute(self, node):
-        self.var_name.append(node.value)
+    def visit_Attribute(self, node):
+        self.var_name.append(node.attr)
         self.generic_visit(node)
         self.var_name.pop()
 
     def visit_Name(self, node):
+        # TODO(ajkapoor): Current iteration doesnt properly handle variables.
+        # Specifically, the names are on the wrong side of the attributes.
+        # See: ...Test.thisisatest3.x.test_process_variable
         self.var_name.append(node.id)
         self._process_variable(node)
         self.generic_visit(node)

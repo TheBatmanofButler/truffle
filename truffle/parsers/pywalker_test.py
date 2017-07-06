@@ -50,8 +50,8 @@ class testPywalker(unittest.TestCase):
 
     def test_get_var_name(self):
         walker = pywalker.FileWalker('dummy_file')
-        self.assertSequenceEqual(walker.var_name, ['dummy_file'])
-        walker.var_name = ['dummy_file', 'test']
+        self.assertSequenceEqual(walker.var_name, [])
+        walker.var_name = ['test']
         self.assertEqual(walker._get_var_name(), 'dummy_file.test')
         walker.imported_functions = {'test': ('other_test', 'other.module')}
         self.assertEqual(walker._get_var_name(),
@@ -123,13 +123,13 @@ class testPywalker(unittest.TestCase):
          if isinstance(node, ast.Call)]
 
         self.assertDictEqual(walker.calls, {
-            'this.is.a.test.4': 'this.is.a.test',
+            'this.is.a.test.4': 'dummy_file.dummy.scope.this.is.a.test',
         })
 
         self.assertDictEqual(walker.functions, {
             'dummy_file.dummy.scope': {
                 'calls': {
-                    'this.is.a.test.4': 4
+                    'dummy_file.dummy.scope.this.is.a.test': 4
                 }
             }
         })
@@ -144,7 +144,8 @@ class testPywalker(unittest.TestCase):
         walker._process_variable(node)
         walker._process_variable(node)
         self.assertDictEqual(walker.variables, {
-            'this.is.a.test.1': 'this.is.a.test',
+            'dummy_file..this.is.a.test': 'dummy_file.this.is.a.test.1',
+            'dummy_file..this.is.a.test.1': 'dummy_file.this.is.a.test.1',
         })
 
     def test_visits(self):
@@ -153,10 +154,12 @@ class testPywalker(unittest.TestCase):
         walker.visit(root)
         functions, var, import_files, import_funcs, calls = walker.get_data()
 
+        self.maxDiff = None
+
         true_functions = {
             'test_data.test_walk..thisisatest': {
                 'calls': {},
-                'lineno': 4,
+                'lineno': 5,
                 'calling_functions': [],
                 'name': 'thisisatest',
                 'fname': 'test_data.test_walk',
@@ -166,9 +169,9 @@ class testPywalker(unittest.TestCase):
             },
             'test_data.test_walk..thisisatest2': {
                 'calls': {
-                    'test_data.test_walk.thisisatest.9': 9,
+                    'test_data.test_walk.thisisatest2.thisisatest': 10,
                 },
-                'lineno': 8,
+                'lineno': 9,
                 'calling_functions': [],
                 'name': 'thisisatest2',
                 'fname': 'test_data.test_walk',
@@ -178,7 +181,7 @@ class testPywalker(unittest.TestCase):
             },
             'test_data.test_walk..Test': {
                 'calls': {},
-                'lineno': 11,
+                'lineno': 12,
                 'calling_functions': [],
                 'name': 'Test',
                 'fname': 'test_data.test_walk',
@@ -188,7 +191,7 @@ class testPywalker(unittest.TestCase):
             },
             'test_data.test_walk.Test.thisisatest3': {
                 'calls': {},
-                'lineno': 13,
+                'lineno': 14,
                 'calling_functions': [],
                 'name': 'thisisatest3',
                 'fname': 'test_data.test_walk',
@@ -200,12 +203,19 @@ class testPywalker(unittest.TestCase):
 
         self.assertDictEqual(functions, true_functions)
 
-        # TODO(theahura): THIS DOESNT ACCOUNT FOR SCOPE
-        # see: arg1 in both function scopes not being treated separately.
-        # Find a way to incorporate context without breaking imported functions.
         true_variables = {
-            'test_data.test_walk.arg1.4': 'test_data.test_walk.arg1',
-            'test_data.test_walk.arg1.8': 'test_data.test_walk.arg1'
+            'test_data.test_walk.thisisatest.arg1': ('test_data.test_walk.'
+                                                     'thisisatest.arg1.5'),
+            'test_data.test_walk.thisisatest.arg1.7': ('test_data.test_walk.'
+                                                       'thisisatest.arg1.5'),
+            'test_data.test_walk.thisisatest2.arg1': ('test_data.test_walk.'
+                                                      'thisisatest2.arg1.9'),
+            'test_data.test_walk.Test.object': ('test_data.test_walk.Test.'
+                                                'object.12'),
+
+            # TODO(ajkaoor): This needs to be removed somehow.
+            'test_data.test_walk.thisisatest2.thisisatest.thisisatest': (
+                'test_data.test_walk.thisisatest2.thisisatest.thisisatest.10'),
         }
 
         print var
