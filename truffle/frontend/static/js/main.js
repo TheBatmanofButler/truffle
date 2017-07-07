@@ -37,7 +37,7 @@ function setupCodeMirror() {
 function setupFilePanel() {
 	$(".file-panel li").click(function (e) {
 		e.stopPropagation();
-		$(this).children().not("i,a").animate({
+		$(this).children().not("i,a, .directory-name").animate({
 			height: "toggle"
 		})
 		$(this).children("i").toggleClass("right");

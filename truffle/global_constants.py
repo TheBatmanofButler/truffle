@@ -10,7 +10,7 @@ TRUFFLE_DOCSTRING_REGEX = ("Description:((\n)|.)*Args:((\n)|.)*Returns:((\n)|.)*
 
 FILEPATH ="/Users/ganeshravichandran/Dropbox/Code/truffle/truffle/"
 
-INCLUDE_LIST = [".py$", ".md$", ".txt$", ".js$", ".html$", ".htm$"]
+INCLUDE_LIST = [".py$", ".md$", ".txt$", ".js$", ".html$", ".htm$", ".css$"]
 
 EXCLUDE_LIST = [".git*", ".DS_Store", ".pyc$", "__pycache__", ".ico"]
 
