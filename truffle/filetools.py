@@ -14,7 +14,12 @@ def _get_short_name(long_name):
     """Returns file name without directory path"""
 
     short_name = long_name.split("/")
-    short_name = short_name[len(short_name) - 1]
+    l = len(short_name)
+
+    if short_name[l - 1] == "":
+        short_name = short_name[l - 2]
+    else:
+        short_name = short_name[l - 1]
 
     return short_name
 
@@ -111,4 +116,3 @@ def get_scan_path(directory_tree, indexed_files, indexed_functions):
                     queue.append(i)
 
     return scan_path
-

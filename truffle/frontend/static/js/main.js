@@ -20,6 +20,11 @@ function setupCodeMirror() {
 		mode = "xml";
 	}
 
+	CodeMirror.commands.save = function(instance) {
+		postSavedFile(filename, instance.getValue());
+		console.log(instance)
+	}
+
 	var editor = CodeMirror(document.getElementById("editor"), {
 	  value: codeText,
 	  lineNumbers: true,
@@ -37,7 +42,7 @@ function setupCodeMirror() {
 function setupFilePanel() {
 	$(".file-panel li").click(function (e) {
 		e.stopPropagation();
-		$(this).children().not("i,a").animate({
+		$(this).children().not("i,a, .directory-name").animate({
 			height: "toggle"
 		})
 		$(this).children("i").toggleClass("right");
@@ -74,10 +79,16 @@ function getScanPathUrl(url) {
 }
 
 function getScanPath() {
-	$.getJSON('/_get_scan_path', {}, function(data) {
+	$.getJSON('/_get_scan_path', function(data) {
 		sessionStorage.setItem("scanPath", JSON.stringify(data));
 		sessionStorage.setItem("scanIndex", JSON.stringify(0));
 		runScan();
+	});
+}
+
+function postSavedFile(filename, codeText) {
+	$.post('/_post_saved_file', {"filename": filename, "code_text": codeText}, function(response) {
+		console.log(response);
 	});
 }
 
