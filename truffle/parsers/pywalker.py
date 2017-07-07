@@ -7,12 +7,12 @@ import ast
 
 def _get_node_name(node):
     """Get all attribute and name ids for a node."""
-    name = ''
+    name = []
     while not isinstance(node, ast.Name):
         if isinstance(node, ast.Call):
             node = node.func
         elif isinstance(node, ast.Attribute):
-            name = node.attr + '.' + name if len(name) else node.attr
+            name = [node.attr] + name if len(name) else [node.attr]
             node = node.value
         elif isinstance(node, ast.Subscript):
             node = node.value
@@ -20,7 +20,7 @@ def _get_node_name(node):
             break
 
     if isinstance(node, ast.Name):
-        name = (node.id + '.' + name) if len(name) else node.id
+        name = [node.id] + name if len(name) else [node.id]
     return name
 
 
@@ -28,7 +28,7 @@ def _get_args(node):
     if isinstance(node, ast.FunctionDef):
         return [arg.id for arg in node.args.args]
     elif isinstance(node, ast.ClassDef):
-        return [_get_node_name(base) for base in node.bases]
+        return ['.'.join(_get_node_name(base)) for base in node.bases]
 
 
 class FileWalker(ast.NodeVisitor):
@@ -66,30 +66,23 @@ class FileWalker(ast.NodeVisitor):
 
         return var_name
 
-    def _get_var_name(self):
+    def _get_var_name(self, var_name_clone=None):
         """Get name from current var name list, checking against imports."""
-
+        if not var_name_clone:
+            var_name_clone = list(self.var_name)
         # Handle direct imports, which only have a single function in the name.
-        if (len(self.var_name) == 2
-                and self.var_name[-1] in self.imported_functions):
+        if (len(var_name_clone) == 2
+                and var_name_clone[-1] in self.imported_functions):
             import_funcname, import_module = self.imported_functions[
-                self.var_name[-1]]
+                var_name_clone[-1]]
             import_module = self._check_imports(import_module)
             import_module = import_module
-            var_name_clone = list(self.var_name)
             var_name_clone[0] = import_module
             var_name_clone[-1] = import_funcname
-            return '.'.join(var_name_clone)
         # Check to see if an import name exists in the variable name.
         else:
-            var_name_clone = list(self.var_name)
-            base_name = self._check_imports(var_name_clone[0])
-            if base_name == self.var_name[0]:
-                scoped_name = [self.fname] + self.context + self.var_name
-                return '.'.join(scoped_name)
-            var_name_clone[0] = base_name
-            return '.'.join(var_name_clone)
-
+            var_name_clone[0] = self._check_imports(var_name_clone[0])
+        return var_name_clone
 
     def _process_import(self, node):
         """Process imports (asname - name) and store."""
@@ -121,8 +114,14 @@ class FileWalker(ast.NodeVisitor):
 
     def _process_call(self, node):
         """Process calls (imported call) and store."""
-        var_name = '%s.%d' % ('.'.join(self.var_name), node.lineno)
-        true_var_name = self._get_var_name()
+        var_name_clone = _get_node_name(node)
+        var_name = '%s.%s.%d' % (self.fname, '.'.join(var_name_clone),
+                                 node.lineno)
+        true_var_name_list = self._get_var_name(list(var_name_clone))
+        if true_var_name_list[0] == var_name_clone[0]:
+            var_name = '%s.%s.%d' % (self.fname, '.'.join(true_var_name_list), node.lineno)
+            true_var_name_list = ([self.fname] + self.context + true_var_name_list)
+        true_var_name = '.'.join(true_var_name_list)
         self.calls[var_name] = true_var_name
         if self.context:
             last_scope = '%s.%s.%s' % (self.fname, '.'.join(self.context[:-1]),
@@ -131,17 +130,19 @@ class FileWalker(ast.NodeVisitor):
 
     def _process_variable(self, node):
         """Process variables (imported vars) and store."""
-        var_name = '.'.join(self.var_name)
-        base_name = self._check_imports(self.var_name[0])
-        if base_name == self.var_name[0]:
-            var_name = '%s.%s.%s' % (self.fname, '.'.join(self.context),
-                                     var_name)
-        if var_name in self.variables:
-            loaded_var_name = '%s.%d' % (var_name, node.lineno)
-            self.variables[loaded_var_name] = self.variables[var_name]
-        else:
-            self.variables[var_name] = '%s.%d' % (self._get_var_name(),
-                                                  node.lineno)
+        var_name = '%s.%s.%s' % (self.fname, '.'.join(self.context),
+                                 '.'.join(self.var_name[::-1]))
+        if var_name not in self.variables:
+            base_name = self._check_imports(self.var_name[-1])
+            true_var_name_list = self._get_var_name(list(self.var_name[::-1]))
+            true_var_name = '.'.join(true_var_name_list)
+            if true_var_name_list[0] == self.var_name[-1]:
+                true_var_name = '%s.%s.%d' % (self.fname, true_var_name,
+                                              node.lineno)
+            self.variables[var_name] = true_var_name
+
+        loaded_var_name = '%s.%d' % (var_name, node.lineno)
+        self.variables[loaded_var_name] = self.variables[var_name]
 
     def visit_FunctionDef(self, node):
         self._process_functiondef(node)
@@ -153,11 +154,8 @@ class FileWalker(ast.NodeVisitor):
         self.visit_FunctionDef(node)
 
     def visit_Call(self, node):
-        call_name = _get_node_name(node)
-        self.var_name.append(call_name)
         self._process_call(node)
         self.generic_visit(node)
-        self.var_name.pop()
 
     def visit_Lambda(self, node):
         # lambdas are just functions, albeit with no statements

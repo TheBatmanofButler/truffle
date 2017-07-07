@@ -9,12 +9,13 @@ def _setup(fname):
     return ast.parse(open(fname, 'r').read())
 
 class testPywalker(unittest.TestCase):
+
     def test_get_node_name(self):
         root = _setup('test_data/test_get_node_name.py')
         names = [(pywalker._get_node_name(node), node.__class__.__name__) for
                  node in ast.walk(root) if isinstance(node, ast.Call)]
-        self.assertEqual(names[0], ('np.random.uniform', 'Call'))
-        self.assertEqual(names[1], ('thisisatest', 'Call'))
+        self.assertEqual(names[0], ('np.random.uniform'.split('.'), 'Call'))
+        self.assertEqual(names[1], (['thisisatest'], 'Call'))
 
     def test_get_args(self):
         root = _setup('test_data/test_get_args.py')
@@ -52,18 +53,18 @@ class testPywalker(unittest.TestCase):
         walker = pywalker.FileWalker('dummy_file')
         self.assertSequenceEqual(walker.var_name, [])
         walker.var_name = ['test']
-        self.assertEqual(walker._get_var_name(), 'dummy_file.test')
+        self.assertEqual(walker._get_var_name(), ['test'])
         walker.imported_functions = {'test': ('other_test', 'other.module')}
         self.assertEqual(walker._get_var_name(),
-                         'other.module.other_test')
+                         ['other.module.other_test'])
         walker.imported_modules = {'plt': 'matplotlib.pyplot'}
         walker.var_name = ['plt', 'this', 'is', 'a', 'test']
         self.assertEqual(walker._get_var_name(),
-                         'matplotlib.pyplot.this.is.a.test')
+                         ['matplotlib.pyplot', 'this', 'is', 'a', 'test'])
         walker.imported_functions = {'plt' : ('pyplot', 'matplotlib')}
         walker.imported_modules = {}
         self.assertEqual(walker._get_var_name(),
-                         'matplotlib.pyplot.this.is.a.test')
+                         ['matplotlib.pyplot', 'this', 'is', 'a', 'test'])
 
         walker.imported_functions = {'testC': ('testc', 'fileB'),
                                      'fileB': ('fileb', 'fileA'),
@@ -71,7 +72,7 @@ class testPywalker(unittest.TestCase):
         walker.imported_modules = {'last_file': 'actual.last.file'}
         walker.var_name = ['dummy_file', 'testC']
         self.assertEqual(walker._get_var_name(),
-                         'actual.last.file.filea.fileb.testc')
+                         ['actual.last.file.filea.fileb', 'testc'])
 
     def test_process_import(self):
         walker = pywalker.FileWalker('dummy_file')
@@ -123,13 +124,13 @@ class testPywalker(unittest.TestCase):
          if isinstance(node, ast.Call)]
 
         self.assertDictEqual(walker.calls, {
-            'this.is.a.test.4': 'dummy_file.dummy.scope.this.is.a.test',
+            'dummy_file.thisisatest.4': 'dummy_file.dummy.scope.thisisatest',
         })
 
         self.assertDictEqual(walker.functions, {
             'dummy_file.dummy.scope': {
                 'calls': {
-                    'dummy_file.dummy.scope.this.is.a.test': 4
+                    'dummy_file.dummy.scope.thisisatest': 4
                 }
             }
         })
@@ -144,8 +145,8 @@ class testPywalker(unittest.TestCase):
         walker._process_variable(node)
         walker._process_variable(node)
         self.assertDictEqual(walker.variables, {
-            'dummy_file..this.is.a.test': 'dummy_file.this.is.a.test.1',
-            'dummy_file..this.is.a.test.1': 'dummy_file.this.is.a.test.1',
+            'dummy_file..test.a.is.this': 'dummy_file.test.a.is.this.1',
+            'dummy_file..test.a.is.this.1': 'dummy_file.test.a.is.this.1',
         })
 
     def test_visits(self):
@@ -190,7 +191,9 @@ class testPywalker(unittest.TestCase):
                 'args': ['object']
             },
             'test_data.test_walk.Test.thisisatest3': {
-                'calls': {},
+                'calls': {
+                    ('numpy.random.uniform'): 18
+                },
                 'lineno': 14,
                 'calling_functions': [],
                 'name': 'thisisatest3',
@@ -204,27 +207,55 @@ class testPywalker(unittest.TestCase):
         self.assertDictEqual(functions, true_functions)
 
         true_variables = {
-            'test_data.test_walk.thisisatest.arg1': ('test_data.test_walk.'
-                                                     'thisisatest.arg1.5'),
-            'test_data.test_walk.thisisatest.arg1.7': ('test_data.test_walk.'
-                                                       'thisisatest.arg1.5'),
-            'test_data.test_walk.thisisatest2.arg1': ('test_data.test_walk.'
-                                                      'thisisatest2.arg1.9'),
-            'test_data.test_walk.Test.object': ('test_data.test_walk.Test.'
-                                                'object.12'),
-
-            # TODO(ajkaoor): This needs to be removed somehow.
-            'test_data.test_walk.thisisatest2.thisisatest.thisisatest': (
-                'test_data.test_walk.thisisatest2.thisisatest.thisisatest.10'),
+            'test_data.test_walk.Test.object': 'test_data.test_walk.object.12',
+            'test_data.test_walk.Test.object.12':
+            'test_data.test_walk.object.12',
+            'test_data.test_walk.Test.thisisatest3.np.random.uniform':
+            'numpy.random.uniform',
+            'test_data.test_walk.Test.thisisatest3.np.random.uniform.18':
+            'numpy.random.uniform',
+            'test_data.test_walk.Test.thisisatest3.test_process_variable.x':
+            'test_data.test_walk.test_process_variable.x.16',
+            'test_data.test_walk.Test.thisisatest3.test_process_variable.x.16':
+            'test_data.test_walk.test_process_variable.x.16',
+            'test_data.test_walk.Test.thisisatest3.uniform':
+            'numpy.random.uniform',
+            'test_data.test_walk.Test.thisisatest3.uniform.17':
+            'numpy.random.uniform',
+            'test_data.test_walk.thisisatest.arg1':
+            'test_data.test_walk.arg1.5',
+            'test_data.test_walk.thisisatest.arg1.5':
+            'test_data.test_walk.arg1.5',
+            'test_data.test_walk.thisisatest.arg1.7':
+            'test_data.test_walk.arg1.5',
+            'test_data.test_walk.thisisatest2.arg1':
+            'test_data.test_walk.arg1.9',
+            'test_data.test_walk.thisisatest2.arg1.9':
+            'test_data.test_walk.arg1.9',
+            'test_data.test_walk.thisisatest2.thisisatest':
+            'test_data.test_walk.thisisatest.10',
+            'test_data.test_walk.thisisatest2.thisisatest.10':
+            'test_data.test_walk.thisisatest.10'
         }
 
-        print var
         self.assertDictEqual(var, true_variables)
 
-        print import_files
-        print import_funcs
-        print calls
+        true_import_files = {'np': 'numpy',
+                             'test_process_variable': 'test_process_variable'}
 
+        self.assertDictEqual(import_files, true_import_files)
+
+        true_import_funcs = {'uniform': ('uniform', 'np.random')}
+
+        self.assertDictEqual(import_funcs, true_import_funcs)
+
+        true_calls = {
+            'test_data.test_walk.np.random.uniform.18': 'numpy.random.uniform',
+            'test_data.test_walk.thisisatest.10':
+            'test_data.test_walk.thisisatest2.thisisatest'
+        }
+
+        self.assertDictEqual(calls, true_calls)
 
 if __name__ == '__main__':
     unittest.main()

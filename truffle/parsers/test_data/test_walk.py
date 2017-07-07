@@ -15,4 +15,4 @@ class Test(object):
         print 'hello'
         print test_process_variable.x
         print uniform
-        print np.random.uniform
+        print np.random.uniform()
