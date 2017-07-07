@@ -2,7 +2,26 @@ function setDirectoryTreeLinkBackground() {
 	var selectedLink = sessionStorage.getItem("selectedLink");
 	if (selectedLink) {
 		$("#" + selectedLink).css("font-weight", "bold");
+
+		var codeIsChanged = JSON.parse(localStorage.getItem("codeIsChanged"));
+		var selectedFilename = sessionStorage.getItem("selectedFilename");
+		if (codeIsChanged) {
+			$("#" + selectedLink).text( function() {
+				return selectedFilename + "*";
+			});
+			$("#" + selectedLink).css("font-style", "italic");
+		}
+		else {
+			$("#" + selectedLink).text(selectedFilename);
+			$("#" + selectedLink).css("font-style", "normal");
+		}
+
 	}
+}
+
+function codeChange(editor, codeIsChanged) {
+	localStorage.setItem("codeIsChanged", JSON.stringify(codeIsChanged));
+	setDirectoryTreeLinkBackground();
 }
 
 function setupCodeMirror() {
@@ -32,6 +51,26 @@ function setupCodeMirror() {
 	  theme: "base16-dark"
 	});
 
+	editor.on("change", function() {
+		if (editor.getDoc().historySize().undo) {
+			codeChange(editor, true);
+		}
+		else {
+			codeChange(editor, false);
+		}
+	});
+
+	// $('#editor').bind('input propertychange', function() {
+	// 	if (editor.getDoc().historySize().undo) {
+	// 		console.log("1")
+	// 		setDirectoryTreeLinkOnChanged(editor);
+	// 	}
+	// 	else {
+	// 		console.log("2")
+	// 		setDirectoryTreeLinkOnUnchanged(editor);
+	// 	}
+	// });
+
 	if (scanOn) {
 		editor.getDoc().addLineClass(codeMirrorLineNo, "gutter", "selected-line-gutter");
 		editor.getDoc().addLineClass(codeMirrorLineNo, "background", "selected-line-background");
@@ -49,6 +88,7 @@ function setupFilePanel() {
 
 		if ($(this).attr("id")) {
 			sessionStorage.setItem("selectedLink", $(this).attr("id"));
+			sessionStorage.setItem("selectedFilename", $.trim($("#" + selectedLink).text()));
 		}
 
 	});
