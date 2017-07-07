@@ -116,4 +116,3 @@ def get_scan_path(directory_tree, indexed_files, indexed_functions):
                     queue.append(i)
 
     return scan_path
-

@@ -22,11 +22,21 @@ def get_code(filename, lineno):
 
 	return render_template("index.html", directory_tree=directory_tree, filename=filename, lineno=lineno, code_text=code_text)
 
-@app.route("/_get_scan_path", methods=["GET", "POST"])
+@app.route("/_get_scan_path", methods=["GET"])
 def _get_scan_path():
 
 	scan_path = get_scan_path(directory_tree, indexed_files, indexed_functions)
 	return jsonify(scan_path)
+
+@app.route("/_post_saved_file", methods=["POST"])
+def _post_saved_file():
+	filename = request.form["filename"]
+	code_text = request.form["code_text"]
+
+	with open("/" + filename, 'w') as f:
+	    f.write(code_text)
+
+	return jsonify("saved!")
 
 if __name__ == "__main__":
     app.run(debug=True)

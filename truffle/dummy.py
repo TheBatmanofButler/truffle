@@ -42,7 +42,7 @@ class Pet(object):
     def __str__(self):
         return "%s is a %s" % (self.name, self.species)
 
-class Dog(Pet):
+class DogsAreTheBest(Pet):
     
     def __init__(self, name, chases_cats):
         Pet.__init__(self, name, "Dog")
