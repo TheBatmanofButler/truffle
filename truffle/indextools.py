@@ -54,7 +54,7 @@ def _map_file_to_parser(fname):
     return pyparser.PyParser(fname)
 
 
-def index_code(code_dir, index_fname='project_index.json':
+def index_code(code_dir, index_fname='project_index.json'):
     """
     Gets files in code base and indexes in a json file, returns the list of
     tfl objects.
