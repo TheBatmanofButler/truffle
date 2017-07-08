@@ -32,20 +32,6 @@ def _get_parsers(files):
     return parsers
 
 
-def _index_code(parsers):
-    """
-    Returns a list of index objects.
-    """
-    project_index = {}
-    for parser in parsers:
-        file_index = parser.index_code()
-        project_index[parser.fname] = file_index
-
-        # TODO(ajkapoor): Add calling function tree eventually.
-
-    return project_index
-
-
 def _map_file_to_parser(fname):
     """Return the right parser class."""
     # TODO: Make this do the right thing; right now only does python.
@@ -54,25 +40,47 @@ def _map_file_to_parser(fname):
     return pyparser.PyParser(fname)
 
 
-def index_code(code_dir, index_fname='project_index.json'):
-    """
-    Gets files in code base and indexes in a json file, returns the list of
-    tfl objects.
-    """
-    files = _get_files(code_dir)
+def index_code(code_dir):
+    """Gets a new project index object."""
+    return ProjectIndex(code_dir)
 
-    # Does text search before any other indexing.
-    text_searcher = text_index.index_text(files)
 
-    if len(files) == 0:
-        print 'no files could be indexed beyond text search'
-        return {}, {}, {}, {}, text_searcher
+class ProjectIndex(object):
+    """Holds the index for the entire project."""
 
-    # Does the rest of the indexing.
-    parsers = _get_parsers(files)
-    project_index = _index_code(parsers)
+    def __init__(self, code_dir, index_fname='project_index.json'):
+        self.root = code_dir
+        self.files = _get_files(code_dir)
+        self.text_searcher = text_index.index_text(self.files)
+        self.parsers = _get_parsers(self.files)
+        self.project_index = self._index_code()
+        self._get_calling_functions()
 
-    with open(index_fname, 'w') as f:
-        json.dump(project_index, f)
+        with open(index_fname, 'w') as f:
+            json.dump(self.project_index, f)
 
-    return project_index, text_searcher
+    def _append_call(self, source, caller):
+        """Appends call to source from caller in source function location."""
+        for file_obj in self.project_index:
+            if source in file_obj['functions']:
+                file_obj[source]['calling_functions'].append(caller)
+
+    def _get_calling_functions(self):
+        """Parses the project_index and adds calling functions."""
+        for file_obj in self.project_index:
+            for call in file_obj['calls']:
+                source = call['source']
+                caller = call['caller']
+                self._append_call(source, caller)
+
+    def _index_code(self):
+        """Returns a list of index objects."""
+        project_index = {}
+        for parser in self.parsers:
+            file_index = parser.index_code()
+            project_index[parser.fname] = file_index
+        return project_index
+
+    def get_text_search(self, query):
+        """ Gets the text search hits """
+        return text_index.search_text(self.text_searcher, query)
