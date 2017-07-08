@@ -63,6 +63,8 @@ function setupCodeMirror() {
 		editor.execCommand("save");
 	});
 
+	hyperlinkOverlay(editor);
+
 	if (scanOn) {
 		editor.getDoc().addLineClass(codeMirrorLineNo, "gutter", "selected-line-gutter");
 		editor.getDoc().addLineClass(codeMirrorLineNo, "background", "selected-line-background");
@@ -136,5 +138,8 @@ function openScanPath() {
 
 function runScan() {
 	sessionStorage.setItem("scanOn", JSON.stringify(true));
-	openScanPath();
+	$(".bottom-box").animate({height: "50%"});
+
+	
+	// openScanPath();
 }
