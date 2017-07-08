@@ -7,11 +7,11 @@ import ast
 import pywalker
 
 
-def _process_file(functions, imported_modules, imported_functions):
+def _process_file(functions, imported_modules, imported_from):
     return {
         'functions': functions,
         'external_imports': imported_modules,
-        'direct_imports': imported_functions
+        'direct_imports': imported_from
     }
 
 
@@ -32,13 +32,21 @@ class PyParser(object):
     def _index_code(self):
         walker = pywalker.FileWalker(self.fname)
         walker.visit(self.root)
-        return walker.get_data()
+        data = walker.get_data()
+        return {
+            'functions': data[0],
+            'variables': data[1],
+            'imported_modules': data[2],
+            'imported_from': data[3],
+            'calls': data[4]
+        }
+
 
     def index_file(self):
-        (function_index, variable_index, imported_modules, imported_functions,
+        (function_index, variable_index, imported_modules, imported_from,
          call_index) = self._index_code()
 
         file_index = _process_file(function_index.keys(), imported_modules,
-                                   imported_functions)
+                                   imported_from)
 
         return function_index, call_index, file_index, variable_index

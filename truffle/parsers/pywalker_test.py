@@ -124,7 +124,10 @@ class testPywalker(unittest.TestCase):
          if isinstance(node, ast.Call)]
 
         self.assertDictEqual(walker.calls, {
-            'dummy_file.thisisatest.4': 'dummy_file.dummy.scope.thisisatest',
+            'dummy_file.thisisatest.4': {
+                'source': 'dummy_file.dummy.scope.thisisatest',
+                'caller': 'dummy_file.dummy.scope'
+            }
         })
 
         self.assertDictEqual(walker.functions, {
@@ -250,9 +253,14 @@ class testPywalker(unittest.TestCase):
         self.assertDictEqual(import_funcs, true_import_funcs)
 
         true_calls = {
-            'test_data.test_walk.np.random.uniform.18': 'numpy.random.uniform',
-            'test_data.test_walk.thisisatest.10':
-            'test_data.test_walk.thisisatest2.thisisatest'
+            'test_data.test_walk.np.random.uniform.18': {
+                'source': 'numpy.random.uniform',
+                'caller': 'test_data.test_walk.Test.thisisatest3'
+            },
+            'test_data.test_walk.thisisatest.10': {
+                'source': 'test_data.test_walk.thisisatest2.thisisatest',
+                'caller': 'test_data.test_walk.thisisatest2'
+            }
         }
 
         self.assertDictEqual(calls, true_calls)

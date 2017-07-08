@@ -34,24 +34,16 @@ def _get_parsers(files):
 
 def _index_code(parsers):
     """
-    Returns a list of function objects and file objects.
+    Returns a list of index objects.
     """
-    functions = {}
-    function_calls = {}
-    files = {}
-    variables = {}
+    project_index = {}
     for parser in parsers:
-        (function_index, call_index, file_index,
-         variable_index) = parser.index_code()
+        file_index = parser.index_code()
+        project_index[parser.fname] = file_index
 
-        functions.update(function_index)
-        function_calls.update(call_index)
-        files.update(file_index)
-        variables.update(variable_index)
+        # TODO(ajkapoor): Add calling function tree eventually.
 
-    # Add calling functions?
-
-    return functions, function_calls, files, variables
+    return project_index
 
 
 def _map_file_to_parser(fname):
@@ -62,10 +54,7 @@ def _map_file_to_parser(fname):
     return pyparser.PyParser(fname)
 
 
-def index_code(code_dir, func_index_fname='function_index.json',
-               call_index_fname='call_index.json',
-               file_index_fname='file_index.json',
-               var_index_fname='var_index.json'):
+def index_code(code_dir, index_fname='project_index.json':
     """
     Gets files in code base and indexes in a json file, returns the list of
     tfl objects.
@@ -77,21 +66,13 @@ def index_code(code_dir, func_index_fname='function_index.json',
 
     if len(files) == 0:
         print 'no files could be indexed beyond text search'
-        return {}, {}, {}, text_searcher
+        return {}, {}, {}, {}, text_searcher
 
     # Does the rest of the indexing.
     parsers = _get_parsers(files)
-    (indexed_functions, indexed_calls, indexed_files,
-     indexed_vars) = _index_code(parsers)
+    project_index = _index_code(parsers)
 
-    with open(func_index_fname, 'w') as f:
-        json.dump(indexed_functions, f)
-    with open(file_index_fname, 'w') as f:
-        json.dump(indexed_files, f)
-    with open(call_index_fname, 'w') as f:
-        json.dump(indexed_calls, f)
-    with open(var_index_fname, 'w') as f:
-        json.dump(indexed_vars, f)
+    with open(index_fname, 'w') as f:
+        json.dump(project_index, f)
 
-    return (indexed_functions, indexed_calls, indexed_files, indexed_vars,
-            text_searcher)
+    return project_index, text_searcher

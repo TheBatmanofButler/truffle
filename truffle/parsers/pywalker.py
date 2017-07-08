@@ -122,7 +122,8 @@ class FileWalker(ast.NodeVisitor):
             var_name = '%s.%s.%d' % (self.fname, '.'.join(true_var_name_list), node.lineno)
             true_var_name_list = ([self.fname] + self.context + true_var_name_list)
         true_var_name = '.'.join(true_var_name_list)
-        self.calls[var_name] = true_var_name
+        self.calls[var_name] = {'source': true_var_name,
+                                'caller': '.'.join([self.fname] + self.context)}
         if self.context:
             last_scope = '%s.%s.%s' % (self.fname, '.'.join(self.context[:-1]),
                                        self.context[-1])
