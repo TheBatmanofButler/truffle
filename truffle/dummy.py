@@ -11,7 +11,7 @@ class Pet(object):
             keys: A sequence of strings representing the key of each table row
                 to fetch.
             other_silly_variable: Another optional variable, that has a much
-                longer name than the other args, and which does nothing.
+                longer name  than the other args, and which does nothing.
 
         Returns:
             A dict mapping keys to the corresponding table row data

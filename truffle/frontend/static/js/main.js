@@ -40,7 +40,7 @@ function setupCodeMirror() {
 
 	CodeMirror.commands.save = function(instance) {
 		postSavedFile(filename, instance.getValue());
-		console.log(instance)
+		console.log(instance.getValue())
 	}
 
 	var editor = CodeMirror(document.getElementById("editor"), {
@@ -57,6 +57,10 @@ function setupCodeMirror() {
 		else {
 			codeChange(editor, false);
 		}
+	});
+
+	$(".save-option").click( function (e) {
+		editor.execCommand("save");
 	});
 
 	if (scanOn) {
@@ -87,10 +91,6 @@ function setupFilePanel() {
 		$(".file-panel").animate({width: "toggle"});
 	});
 }
-
-$(".scan-option").click( function (e) {
-	getScanPath();
-});
 
 function getScanLineNo(url) {
 	var urlArray = url.split("."),
