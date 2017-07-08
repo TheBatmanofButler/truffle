@@ -63,6 +63,7 @@ class ProjectIndex(object):
         """Appends call to source from caller in source function location."""
         for _, file_obj in self.project_index.iteritems():
             if source in file_obj['functions']:
+                print file_obj
                 file_obj[source]['calling_functions'].append(caller)
 
     def _get_calling_functions(self):

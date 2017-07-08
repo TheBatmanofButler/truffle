@@ -119,6 +119,8 @@ function getScanPath() {
 function postSavedFile(filename, codeText) {
 	$.post('/_post_saved_file', {"filename": filename, "code_text": codeText}, function(response) {
 		console.log(response);
+		localStorage.setItem("codeIsChanged", JSON.stringify(false));
+		setDirectoryTreeLinkBackground();
 		alert("File Saved")
 	});
 }
