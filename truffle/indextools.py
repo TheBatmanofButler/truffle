@@ -11,16 +11,6 @@ import parsers.pyparser as pyparser
 import text_index
 
 
-def _get_files(code_dir):
-    """Gets a list of files that can be processed by truffle."""
-    files = []
-    for (dirpath, _, filenames) in os.walk(code_dir):
-        filenames = [os.path.join(dirpath, f) for f in filenames if
-                     f.endswith(gc.SUPPORTED_LANGS)]
-        files.extend(filenames)
-    return files
-
-
 def _get_parsers(files):
     """
     For each file in files, get the appropriate ast tree.
@@ -40,6 +30,16 @@ def _map_file_to_parser(fname):
     return pyparser.PyParser(fname)
 
 
+def get_files(code_dir):
+    """Gets a list of files that can be processed by truffle."""
+    files = []
+    for (dirpath, _, filenames) in os.walk(code_dir):
+        filenames = [os.path.join(dirpath, f) for f in filenames if
+                     f.endswith(gc.SUPPORTED_LANGS)]
+        files.extend(filenames)
+    return files
+
+
 def index_code(code_dir):
     """Gets a new project index object."""
     return ProjectIndex(code_dir)
@@ -50,7 +50,7 @@ class ProjectIndex(object):
 
     def __init__(self, code_dir, index_fname='project_index.json'):
         self.root = code_dir
-        self.files = _get_files(code_dir)
+        self.files = get_files(code_dir)
         self.text_searcher = text_index.index_text(self.files)
         self.parsers = _get_parsers(self.files)
         self.project_index = self._index_code()
@@ -61,14 +61,14 @@ class ProjectIndex(object):
 
     def _append_call(self, source, caller):
         """Appends call to source from caller in source function location."""
-        for file_obj in self.project_index:
+        for _, file_obj in self.project_index.iteritems():
             if source in file_obj['functions']:
                 file_obj[source]['calling_functions'].append(caller)
 
     def _get_calling_functions(self):
         """Parses the project_index and adds calling functions."""
-        for file_obj in self.project_index:
-            for call in file_obj['calls']:
+        for _, file_obj in self.project_index.iteritems():
+            for _, call in file_obj['calls'].iteritems():
                 source = call['source']
                 caller = call['caller']
                 self._append_call(source, caller)
