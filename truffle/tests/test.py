@@ -1,1 +1,3 @@
-from numpy import sin as s, cos as c, tan as t
+import matplotlib.artist as test
+
+print 'hello'

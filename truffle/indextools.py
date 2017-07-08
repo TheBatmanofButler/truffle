@@ -10,14 +10,16 @@ import global_constants as gc
 import parsers.pyparser as pyparser
 import text_index
 
-def _map_file_to_parser(fname):
-    """
-    Return the right parser function.
-    """
-    # TODO: Make this do the right thing; right now only does python.
-    if not fname.endswith('py'):
-        raise ValueError('file type not implemented; check _map_file_to_parser')
-    return pyparser.PyParser(fname)
+
+def _get_files(code_dir):
+    """Gets a list of files that can be processed by truffle."""
+    files = []
+    for (dirpath, _, filenames) in os.walk(code_dir):
+        filenames = [os.path.join(dirpath, f) for f in filenames if
+                     f.endswith(gc.SUPPORTED_LANGS)]
+        files.extend(filenames)
+    return files
+
 
 def _get_parsers(files):
     """
@@ -29,41 +31,39 @@ def _get_parsers(files):
         parsers.append(parser)
     return parsers
 
-def _get_files(code_dir):
-    """
-    Gets a list of files that can be processed by truffle.
-    """
-    files = []
-    for (dirpath, _, filenames) in os.walk(code_dir):
-        filenames = [os.path.join(dirpath, f) for f in filenames if
-                     f.endswith(gc.SUPPORTED_LANGS)]
-        files.extend(filenames)
-    return files
-
 
 def _index_code(parsers):
     """
     Returns a list of function objects and file objects.
     """
     functions = {}
+    function_calls = {}
     files = {}
     variables = {}
     for parser in parsers:
-        functions.update(parser.index_functions())
-        files.update(parser.index_files())
-        variables.update(parser.index_variables())
-    return functions, files, variables
+        (function_index, call_index, file_index,
+         variable_index) = parser.index_code()
 
-def _add_calling_functions(indexed_functions):
-    """ Populates calling functions set for each defined function passed in"""
-    for func_name, function in indexed_functions.iteritems():
-        for called_func_name in function['called_functions']:
-            if called_func_name[0] in indexed_functions:
-                indexed_functions[called_func_name[0]][
-                    'calling_functions'].append(func_name)
-    return indexed_functions
+        functions.update(function_index)
+        function_calls.update(call_index)
+        files.update(file_index)
+        variables.update(variable_index)
+
+    # Add calling functions?
+
+    return functions, function_calls, files, variables
+
+
+def _map_file_to_parser(fname):
+    """Return the right parser class."""
+    # TODO: Make this do the right thing; right now only does python.
+    if not fname.endswith('py'):
+        raise ValueError('file type not implemented; check _map_file_to_parser')
+    return pyparser.PyParser(fname)
+
 
 def index_code(code_dir, func_index_fname='function_index.json',
+               call_index_fname='call_index.json',
                file_index_fname='file_index.json',
                var_index_fname='var_index.json'):
     """
@@ -79,24 +79,19 @@ def index_code(code_dir, func_index_fname='function_index.json',
         print 'no files could be indexed beyond text search'
         return {}, {}, {}, text_searcher
 
+    # Does the rest of the indexing.
     parsers = _get_parsers(files)
-
-    # Index functions -> function calls.
-    indexed_functions, indexed_files, indexed_vars = _index_code(parsers)
+    (indexed_functions, indexed_calls, indexed_files,
+     indexed_vars) = _index_code(parsers)
 
     with open(func_index_fname, 'w') as f:
         json.dump(indexed_functions, f)
     with open(file_index_fname, 'w') as f:
         json.dump(indexed_files, f)
+    with open(call_index_fname, 'w') as f:
+        json.dump(indexed_calls, f)
     with open(var_index_fname, 'w') as f:
         json.dump(indexed_vars, f)
 
-    return indexed_functions, indexed_files, indexed_vars, text_searcher
-
-if __name__=='__main__':
-    print 'running test on . dir'
-    print 'testing languages: %s' % str(gc.SUPPORTED_LANGS)
-    # TODO: Make a test folder
-    #index_functions('/home/amol/Code/school/Oxford/Oxford-Reinforcement-Learning/final-proj')
-    index_code('.')
-    print 'outputs in default .json files'
+    return (indexed_functions, indexed_calls, indexed_files, indexed_vars,
+            text_searcher)
