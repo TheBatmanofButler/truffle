@@ -20,9 +20,13 @@ def index_text(files):
     writer = ix.writer()
 
     for f in files:
-        with codecs.open(f, 'r', 'utf-8') as openf:
-            writer.add_document(path=unicode(f, 'utf-8'), content=openf.read(),
-                                last_mod=os.path.getmtime(f))
+        try:
+            with codecs.open(f, 'r', 'utf-8') as openf:
+                writer.add_document(path=unicode(f, 'utf-8'),
+                                    content=openf.read(),
+                                    last_mod=os.path.getmtime(f))
+        except:
+            continue
 
     writer.commit()
     return ix

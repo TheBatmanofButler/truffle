@@ -30,12 +30,15 @@ def _map_file_to_parser(fname, root):
 
 def get_files(code_dir):
     """Gets a list of files that can be processed by truffle."""
-    files = []
+    tfl_files = []
+    total_files = []
     for (dirpath, _, filenames) in os.walk(code_dir):
-        filenames = [os.path.join(dirpath, f) for f in filenames if
+        py_fnames = [os.path.join(dirpath, f) for f in filenames if
                      f.endswith(gc.SUPPORTED_LANGS)]
-        files.extend(filenames)
-    return files
+        tot_fnames = [os.path.join(dirpath, f) for f in filenames]
+        tfl_files.extend(py_fnames)
+        total_files.extend(tot_fnames)
+    return tfl_files, total_files
 
 
 def index_code(code_dir):
@@ -48,8 +51,8 @@ class ProjectIndex(object):
 
     def __init__(self, code_dir, index_fname='project_index.json'):
         self.root = code_dir
-        self.files = get_files(code_dir)
-        self.text_searcher = text_index.index_text(self.files)
+        self.files, self.total_files = get_files(code_dir)
+        self.text_searcher = text_index.index_text(self.total_files)
         self.parsers = _get_parsers(self.files, self.root)
         self.project_index = self._index_code()
         self._get_calling_functions()
