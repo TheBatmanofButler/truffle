@@ -8,7 +8,6 @@ from collections import deque
 import os
 import re
 import global_constants
-import searchtools
 
 def _get_short_name(long_name):
     """Returns file name without directory path"""

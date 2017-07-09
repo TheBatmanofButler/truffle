@@ -8,7 +8,7 @@ import global_constants
 
 app = Flask(__name__, template_folder="frontend/templates", static_folder="frontend/static")
 directory_tree = get_directory_tree(global_constants.FILEPATH)
-# project_index = index_code(global_constants.FILEPATH)
+project_index = index_code(global_constants.FILEPATH)
 
 @app.route("/", methods=["GET", "POST"])
 def index():

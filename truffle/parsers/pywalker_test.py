@@ -29,7 +29,7 @@ class testPywalker(unittest.TestCase):
                                         ['arg1', 'arg2', 'arg3']])
 
     def test_pywalker_get_data(self):
-        walker = pywalker.FileWalker('dummy_file')
+        walker = pywalker.FileWalker('dummy_file', '')
         walker.functions = 'test1'
         walker.variables = 'test2'
         walker.imported_modules = 'test3'
@@ -40,30 +40,35 @@ class testPywalker(unittest.TestCase):
                                         'test5'))
 
     def test_check_import(self):
-        walker = pywalker.FileWalker('dummy_file')
+        walker = pywalker.FileWalker('dummy_file', '')
         walker.imported_functions = {'testC': ('testc', 'fileB'),
                                      'fileB': ('fileb.addon', 'fileA'),
                                      'fileA': ('filea', 'last_file')}
         walker.imported_modules = {'last_file': 'actual.last.file'}
         var_name = 'testC'
-        self.assertEqual(walker._check_imports(var_name),
+        full_name, _ = walker._check_imports(var_name)
+        self.assertEqual(full_name,
                          'actual.last.file.filea.fileb.addon.testc')
 
     def test_get_var_name(self):
-        walker = pywalker.FileWalker('dummy_file')
+        walker = pywalker.FileWalker('dummy_file', '')
         self.assertSequenceEqual(walker.var_name, [])
         walker.var_name = ['test']
-        self.assertEqual(walker._get_var_name(), ['test'])
+        full_var_name, _ = walker._get_var_name()
+        self.assertEqual(full_var_name, ['test'])
         walker.imported_functions = {'test': ('other_test', 'other.module')}
-        self.assertEqual(walker._get_var_name(),
+        full_var_name, _ = walker._get_var_name()
+        self.assertEqual(full_var_name,
                          ['other.module.other_test'])
         walker.imported_modules = {'plt': 'matplotlib.pyplot'}
         walker.var_name = ['plt', 'this', 'is', 'a', 'test']
-        self.assertEqual(walker._get_var_name(),
+        full_var_name, _ = walker._get_var_name()
+        self.assertEqual(full_var_name,
                          ['matplotlib.pyplot', 'this', 'is', 'a', 'test'])
         walker.imported_functions = {'plt' : ('pyplot', 'matplotlib')}
         walker.imported_modules = {}
-        self.assertEqual(walker._get_var_name(),
+        full_var_name, _ = walker._get_var_name()
+        self.assertEqual(full_var_name,
                          ['matplotlib.pyplot', 'this', 'is', 'a', 'test'])
 
         walker.imported_functions = {'testC': ('testc', 'fileB'),
@@ -71,11 +76,12 @@ class testPywalker(unittest.TestCase):
                                      'fileA': ('filea', 'last_file')}
         walker.imported_modules = {'last_file': 'actual.last.file'}
         walker.var_name = ['dummy_file', 'testC']
-        self.assertEqual(walker._get_var_name(),
+        full_var_name, _ = walker._get_var_name()
+        self.assertEqual(full_var_name,
                          ['actual.last.file.filea.fileb', 'testc'])
 
     def test_process_import(self):
-        walker = pywalker.FileWalker('dummy_file')
+        walker = pywalker.FileWalker('dummy_file', '')
         root = _setup('test_data/test_process_import.py')
         [walker._process_import(node) for node in ast.walk(root)
          if isinstance(node, ast.Import) or isinstance(node, ast.ImportFrom)]
@@ -94,7 +100,7 @@ class testPywalker(unittest.TestCase):
     def test_process_function_def(self):
         self.maxDiff = None
         root = _setup('test_data/test_process_functiondef.py')
-        walker = pywalker.FileWalker('dummy_file')
+        walker = pywalker.FileWalker('dummy_file', '')
         walker.context = ['some', 'scope']
 
         true_func_obj = {'dummy_file.some.scope.thisisatest': {
@@ -115,7 +121,7 @@ class testPywalker(unittest.TestCase):
 
     def test_process_call(self):
         root = _setup('test_data/test_process_call.py')
-        walker = pywalker.FileWalker('dummy_file')
+        walker = pywalker.FileWalker('dummy_file', '')
         walker.var_name = ['this', 'is', 'a', 'test']
         walker.context = ['dummy', 'scope']
         walker.functions = {'dummy_file.dummy.scope': {'calls': {}}}
@@ -140,7 +146,7 @@ class testPywalker(unittest.TestCase):
 
     def test_process_variable(self):
         root = _setup('test_data/test_process_variable.py')
-        walker = pywalker.FileWalker('dummy_file')
+        walker = pywalker.FileWalker('dummy_file', '')
         walker.var_name = ['this', 'is', 'a', 'test']
         nodes = [node for node in ast.walk(root) if isinstance(node, ast.Name)]
         self.assertEqual(len(nodes), 1)
@@ -148,12 +154,12 @@ class testPywalker(unittest.TestCase):
         walker._process_variable(node)
         walker._process_variable(node)
         self.assertDictEqual(walker.variables, {
-            'dummy_file..test.a.is.this': 'dummy_file.test.a.is.this.1',
-            'dummy_file..test.a.is.this.1': 'dummy_file.test.a.is.this.1',
+            'dummy_file.test.a.is.this': 'dummy_file.test.a.is.this.1',
+            'dummy_file.test.a.is.this.1': 'dummy_file.test.a.is.this.1',
         })
 
     def test_visits(self):
-        walker = pywalker.FileWalker('test_data.test_walk')
+        walker = pywalker.FileWalker('test_data.test_walk', '')
         root = _setup('test_data/test_walk.py')
         walker.visit(root)
         functions, var, import_files, import_funcs, calls = walker.get_data()
@@ -161,7 +167,7 @@ class testPywalker(unittest.TestCase):
         self.maxDiff = None
 
         true_functions = {
-            'test_data.test_walk..thisisatest': {
+            'test_data.test_walk.thisisatest': {
                 'calls': {},
                 'lineno': 5,
                 'calling_functions': [],
@@ -171,7 +177,7 @@ class testPywalker(unittest.TestCase):
                 'scope': '',
                 'args': ['arg1']
             },
-            'test_data.test_walk..thisisatest2': {
+            'test_data.test_walk.thisisatest2': {
                 'calls': {
                     'test_data.test_walk.thisisatest2.thisisatest': 10,
                 },
@@ -183,7 +189,7 @@ class testPywalker(unittest.TestCase):
                 'scope': '',
                 'args': ['arg1']
             },
-            'test_data.test_walk..Test': {
+            'test_data.test_walk.Test': {
                 'calls': {},
                 'lineno': 12,
                 'calling_functions': [],
@@ -218,9 +224,9 @@ class testPywalker(unittest.TestCase):
             'test_data.test_walk.Test.thisisatest3.np.random.uniform.18':
             'numpy.random.uniform',
             'test_data.test_walk.Test.thisisatest3.test_process_variable.x':
-            'test_data.test_walk.test_process_variable.x.16',
+            'test_process_variable.x',
             'test_data.test_walk.Test.thisisatest3.test_process_variable.x.16':
-            'test_data.test_walk.test_process_variable.x.16',
+            'test_process_variable.x',
             'test_data.test_walk.Test.thisisatest3.uniform':
             'numpy.random.uniform',
             'test_data.test_walk.Test.thisisatest3.uniform.17':
