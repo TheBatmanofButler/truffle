@@ -37,13 +37,17 @@ def _post_saved_file():
         f.write(code_text)
     return jsonify("saved!")
 
-@app.route("/_run_search", methods=["POST"])
+@app.route("/_run_search", methods=["GET", "POST"])
 def _run_search():
     query = request.form["query"]
     print query
     hits = text_index.search_text(project_index.text_searcher, query)
     print hits
     return jsonify(hits)
+
+@app.route("/_flow_tree", methods=["GET"])
+def _get_function_tree():
+    return jsonify(project_index.functions)
 
 def main():
     print app.root_path

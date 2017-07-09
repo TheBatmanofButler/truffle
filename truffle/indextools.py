@@ -54,7 +54,9 @@ class ProjectIndex(object):
         self.files, self.total_files = get_files(code_dir)
         self.text_searcher = text_index.index_text(self.total_files)
         self.parsers = _get_parsers(self.files, self.root)
-        self.project_index = self._index_code()
+        self.project_index, self.functions = self._index_code()
+
+        # Process calling functions.
         self._get_calling_functions()
 
         with open(index_fname, 'w') as f:
@@ -79,10 +81,12 @@ class ProjectIndex(object):
     def _index_code(self):
         """Returns a list of index objects."""
         project_index = {}
+        functions = {}
         for parser in self.parsers:
             file_index = parser.index_code()
             project_index[parser.fname] = file_index
-        return project_index
+            functions.update(file_index['functions'])
+        return project_index, functions
 
     def get_text_search(self, query):
         """ Gets the text search hits """

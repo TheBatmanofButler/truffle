@@ -150,3 +150,9 @@ function runSearch(query) {
 		console.log(response)
 	});
 }
+
+function loadCallGraph() {
+	$.getJSON('/_flow_tree', function(data) {
+		console.log(data);
+	});
+}
