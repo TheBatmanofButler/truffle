@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 from filetools import get_directory_tree, get_scan_path
 from indextools import index_code
+import text_index
 import global_constants
 
 
@@ -34,6 +35,14 @@ def _post_saved_file():
     with open("/" + filename, 'w') as f:
         f.write(code_text)
     return jsonify("saved!")
+
+@app.route("/_run_search", methods=["POST"])
+def _run_search():
+    query = request.form["query"]
+    print query
+    hits = text_index.search_text(project_index.text_searcher, query)
+    print hits
+    return jsonify(hits)
 
 def main():
     print app.root_path

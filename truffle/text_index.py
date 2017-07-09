@@ -13,9 +13,7 @@ from whoosh.qparser import QueryParser
 import global_constants as gc
 
 def index_text(files):
-    """
-    Goes through all files passed in and indexes text
-    """
+    """Goes through all files passed in and indexes text"""
     schema = Schema(path=ID(stored=True), last_mod=NUMERIC(stored=True),
                     content=TEXT)
     ix = create_in(gc.INDEX_DIR, schema)
@@ -30,9 +28,7 @@ def index_text(files):
     return ix
 
 def search_text(ix, user_query):
-    """
-    Searches all indexed files and returns paths of hits.
-    """
+    """Searches all indexed files and returns paths of hits."""
     with ix.searcher() as searcher:
         query = QueryParser("content", ix.schema).parse(user_query)
         results = searcher.search(query)

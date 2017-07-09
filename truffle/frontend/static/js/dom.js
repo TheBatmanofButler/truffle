@@ -23,4 +23,8 @@ $( document ).ready(function() {
 		runScan();
 	});
 
+	$(".search-option").click( function (e) {
+		runSearch();
+	});
+
 });

@@ -143,3 +143,10 @@ function runScan() {
 	$(".one-line").show("medium");
 	// openScanPath();
 }
+
+function runSearch(query) {
+	console.log('howdy');
+	$.post('/_run_search', {'query': query}, function(response) {
+		console.log(response)
+	});
+}
