@@ -38,16 +38,129 @@ class testPywalker(unittest.TestCase):
 
         true_func_obj = {
             'args': ['x', 'y'],
-            'lineno': 7,
+            'lineno': 9,
             'calls': {},
             'fname': 'test_data.index_test_data.test1',
             'scope': '',
-            'calling_functions': ['test_data.index_test_data.test2'],
+            'calling_functions': ['test_data.index_test_data.test2.14',
+                                  'test_data.index_test_data.test2.16'],
             'docstring': 'This is a multiplication function for testing.',
             'name': 'mult'
         }
 
-        import pdb; pdb.set_trace()
+        self.assertDictEqual(true_func_obj, functions[true_keys[0] + '.mult'])
+
+        true_vars = {
+            true_keys[0] + '.x': true_keys[0] + '.x.3',
+            true_keys[0] + '.x.3': true_keys[0] + '.x.3',
+            true_keys[0] + '.add.x': true_keys[0] + '.x.5',
+            true_keys[0] + '.add.x.5': true_keys[0] + '.x.5',
+            true_keys[0] + '.add.y': true_keys[0] + '.y.5',
+            true_keys[0] + '.add.y.5': true_keys[0] + '.y.5',
+            true_keys[0] + '.add.x.7': true_keys[0] + '.x.5',
+            true_keys[0] + '.add.y.7': true_keys[0] + '.y.5',
+            true_keys[0] + '.mult.x': true_keys[0] + '.x.9',
+            true_keys[0] + '.mult.x.9': true_keys[0] + '.x.9',
+            true_keys[0] + '.mult.y': true_keys[0] + '.y.9',
+            true_keys[0] + '.mult.y.9': true_keys[0] + '.y.9',
+            true_keys[0] + '.mult.x.11': true_keys[0] + '.x.9',
+            true_keys[0] + '.mult.y.11': true_keys[0] + '.y.9',
+            true_keys[0] + '.MathStuff.object': (true_keys[0] +
+                                                '.object.13'),
+            true_keys[0] + '.MathStuff.object.13': (true_keys[0] +
+                                                   '.object.13'),
+            true_keys[0] + '.MathStuff.__init__.self': (
+                true_keys[0] + '.self.16'),
+            true_keys[0] + '.MathStuff.__init__.self.16': (
+                true_keys[0] + '.self.16'),
+            true_keys[0] + '.MathStuff.__init__.algebra': (
+                true_keys[0] + '.algebra.16'),
+            true_keys[0] + '.MathStuff.__init__.algebra.16': (
+                true_keys[0] + '.algebra.16'),
+
+            true_keys[0] + '.MathStuff.get_vars.self': (
+                true_keys[0] + '.self.20'),
+            true_keys[0] + '.MathStuff.get_vars.self.20': (
+                true_keys[0] + '.self.20'),
+            true_keys[0] + '.MathStuff.get_vars.self.vars': (
+                true_keys[0] + '.self.vars.21'),
+            true_keys[0] + '.MathStuff.get_vars.self.vars.21': (
+                true_keys[0] + '.self.vars.21'),
+
+            true_keys[0] + '.MathStuff.plug_in_vars.self': (
+                true_keys[0] + '.self.23'),
+            true_keys[0] + '.MathStuff.plug_in_vars.self.23': (
+                true_keys[0] + '.self.23'),
+
+            true_keys[0] + '.MathStuff.plug_in_vars.variable': (
+                true_keys[0] + '.variable.23'),
+            true_keys[0] + '.MathStuff.plug_in_vars.variable.23': (
+                true_keys[0] + '.variable.23'),
+            true_keys[0] + '.MathStuff.plug_in_vars.variable.25': (
+                true_keys[0] + '.variable.23'),
+
+            true_keys[0] + '.MathStuff.plug_in_vars.number': (
+                true_keys[0] + '.number.23'),
+            true_keys[0] + '.MathStuff.plug_in_vars.number.23': (
+                true_keys[0] + '.number.23'),
+            true_keys[0] + '.MathStuff.plug_in_vars.number.26': (
+                true_keys[0] + '.number.23'),
+
+            true_keys[0] + '.MathStuff.plug_in_vars.i': (
+                true_keys[0] + '.i.24'),
+            true_keys[0] + '.MathStuff.plug_in_vars.i.24': (
+                true_keys[0] + '.i.24'),
+            true_keys[0] + '.MathStuff.plug_in_vars.i.26': (
+                true_keys[0] + '.i.24'),
+
+            true_keys[0] + '.MathStuff.plug_in_vars.ch': (
+                true_keys[0] + '.ch.24'),
+            true_keys[0] + '.MathStuff.plug_in_vars.ch.24': (
+                true_keys[0] + '.ch.24'),
+            true_keys[0] + '.MathStuff.plug_in_vars.ch.25': (
+                true_keys[0] + '.ch.24'),
+
+            # TODO(theahura): Incorrect handling of functions, obj scope.
+            # See issue 42, 43
+            true_keys[0] + '.MathStuff.__init__.algebra.split': (
+                true_keys[0] + '.algebra.split.18'),
+            true_keys[0] + '.MathStuff.__init__.algebra.split.18': (
+                true_keys[0] + '.algebra.split.18'),
+            true_keys[0] + '.MathStuff.__init__.self.vars': (
+                true_keys[0] + '.self.vars.18'),
+            true_keys[0] + '.MathStuff.__init__.self.vars.18': (
+                true_keys[0] + '.self.vars.18'),
+            true_keys[0] + '.MathStuff.plug_in_vars.enumerate': (
+                true_keys[0] + '.enumerate.24'),
+            true_keys[0] + '.MathStuff.plug_in_vars.enumerate.24': (
+                true_keys[0] + '.enumerate.24'),
+            true_keys[0] + '.MathStuff.plug_in_vars.self.vars': (
+                true_keys[0] + '.self.vars.24'),
+            true_keys[0] + '.MathStuff.plug_in_vars.self.vars.24': (
+                true_keys[0] + '.self.vars.24'),
+            true_keys[0] + '.MathStuff.plug_in_vars.self.vars.26': (
+                true_keys[0] + '.self.vars.24'),
+
+
+        }
+
+        self.assertDictEqual(true_vars, var)
+
+        self.assertDictEqual(import_mod, {})
+        self.assertDictEqual(import_from, {})
+
+        true_calls = {
+            'test_data.index_test_data.test1.algebra.split.18': {
+                'caller': 'test_data.index_test_data.test1.MathStuff.__init__.18',
+                'source': 'test_data.index_test_data.test1.MathStuff.__init__.algebra.split'
+            },
+            'test_data.index_test_data.test1.enumerate.24': {
+                'caller': 'test_data.index_test_data.test1.MathStuff.plug_in_vars.24',
+                'source': 'test_data.index_test_data.test1.MathStuff.plug_in_vars.enumerate'
+            }
+        }
+
+        self.assertDictEqual(calls, true_calls)
 
     def test_text_search(self):
         pass

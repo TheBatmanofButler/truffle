@@ -1,6 +1,8 @@
 import test1
 from test1 import MathStuff
 
+y = test1.x
+
 mathstuff = MathStuff('2x + 3y = 10')
 
 print mathstuff.get_vars()

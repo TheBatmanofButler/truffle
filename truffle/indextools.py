@@ -12,9 +12,7 @@ import text_index
 
 
 def _get_parsers(files, root):
-    """
-    For each file in files, get the appropriate ast tree.
-    """
+    """For each file in files, get the appropriate ast tree."""
     parsers = []
     for fname in files:
         parser = _map_file_to_parser(fname, root)
@@ -65,6 +63,7 @@ class ProjectIndex(object):
             if source in file_obj['functions']:
                 file_obj['functions'][source]['calling_functions'].append(
                     caller)
+                break
 
     def _get_calling_functions(self):
         """Parses the project_index and adds calling functions."""

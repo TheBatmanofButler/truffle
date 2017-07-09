@@ -136,7 +136,8 @@ class FileWalker(ast.NodeVisitor):
         # Add to calls list.
         true_var_name = '.'.join(true_var_name_list)
         self.calls[var_name] = {'source': true_var_name,
-                                'caller': '.'.join([self.fname] + self.context)}
+                                'caller': '.'.join([self.fname] + self.context +
+                                                   [str(node.lineno)])}
 
         # Add to function calls.
         if self.context:

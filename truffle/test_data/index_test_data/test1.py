@@ -1,5 +1,7 @@
 """This is a test file."""
 
+x = 10
+
 def add(x, y):
     """This is an add function for testing."""
     return x + y
