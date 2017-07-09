@@ -14,7 +14,7 @@ $( document ).ready(function() {
 	});
 
 	$(".scan-option").click( function (e) {
-		getScanPath();
+		runScan();
 	});
 
 });
