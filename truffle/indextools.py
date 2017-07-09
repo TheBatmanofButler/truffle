@@ -11,23 +11,23 @@ import parsers.pyparser as pyparser
 import text_index
 
 
-def _get_parsers(files):
+def _get_parsers(files, root):
     """
     For each file in files, get the appropriate ast tree.
     """
     parsers = []
     for fname in files:
-        parser = _map_file_to_parser(fname)
+        parser = _map_file_to_parser(fname, root)
         parsers.append(parser)
     return parsers
 
 
-def _map_file_to_parser(fname):
+def _map_file_to_parser(fname, root):
     """Return the right parser class."""
     # TODO: Make this do the right thing; right now only does python.
     if not fname.endswith('py'):
         raise ValueError('file type not implemented; check _map_file_to_parser')
-    return pyparser.PyParser(fname)
+    return pyparser.PyParser(fname, root)
 
 
 def get_files(code_dir):
@@ -52,7 +52,7 @@ class ProjectIndex(object):
         self.root = code_dir
         self.files = get_files(code_dir)
         self.text_searcher = text_index.index_text(self.files)
-        self.parsers = _get_parsers(self.files)
+        self.parsers = _get_parsers(self.files, self.root)
         self.project_index = self._index_code()
         self._get_calling_functions()
 
@@ -63,7 +63,8 @@ class ProjectIndex(object):
         """Appends call to source from caller in source function location."""
         for _, file_obj in self.project_index.iteritems():
             if source in file_obj['functions']:
-                file_obj[source]['calling_functions'].append(caller)
+                file_obj['functions'][source]['calling_functions'].append(
+                    caller)
 
     def _get_calling_functions(self):
         """Parses the project_index and adds calling functions."""
