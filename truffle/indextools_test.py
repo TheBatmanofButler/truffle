@@ -162,9 +162,11 @@ class testPywalker(unittest.TestCase):
 
         self.assertDictEqual(calls, true_calls)
 
-    def test_text_search(self):
-        pass
+        import_mod = project_index[true_keys[1]]['imported_modules']
+        import_from = project_index[true_keys[1]]['imported_from']
 
+        self.assertDictEqual(import_mod, {'test1': 'test1'})
+        self.assertDictEqual(import_from, {'MathStuff': ('MathStuff', 'test1')})
 
 if __name__ == '__main__':
     unittest.main()
