@@ -14,8 +14,9 @@ def index():
     return render_template("index.html", directory_tree=directory_tree,
                            filename="", lineno="", code_text="")
 
-@app.route("/<path:filename>.<int:lineno>", methods=["GET", "POST"])
-def get_code(filename, lineno):
+@app.route("/<path:filename>")
+@app.route("/<path:filename>.<int:lineno>")
+def get_code(filename, lineno = ""):
     with open("/" + filename, 'r') as f:
         code_text = f.read()
     return render_template("index.html", directory_tree=directory_tree,

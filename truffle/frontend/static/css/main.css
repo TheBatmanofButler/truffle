@@ -193,7 +193,7 @@ ul {
 	float: left;
 	width: 75%;
 
-	background-color: red;
+	padding: 1%;
 }
 
 .one-line-text {
@@ -203,10 +203,40 @@ ul {
 .one-line-right {
 	float: left;
 	width: 15%;
+
+	padding: 1%;
 }
 
 textarea {
 	font-family: 'Source Code Pro', monospace;
+	box-sizing: border-box;
 	/*font-size: 16px;*/
 	resize: none;
+}
+
+.scan-buttons {
+	width: 100%;
+}
+
+button {
+	display: inline-block;
+	background-color: #E4FDE1;
+    font-weight: 400;
+    line-height: 1.25;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: .5rem 1rem;
+    font-size: 1rem;
+}
+
+.next-button, .previous-button {
+	background-color: #8BBEB2;
+}
+
+.end-scan-button {
+	background-color: #9D695A;
+	float: right;
 }

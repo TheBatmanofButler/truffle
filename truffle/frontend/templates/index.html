@@ -65,7 +65,7 @@
       
                         {% else %}
                           <!-- link for name of item -->
-                          <a href="{{ url_for('get_code', filename=item.name[1:], lineno=1) }}">
+                          <a href="{{ url_for('get_code', filename=item.name[1:]) }}">
                             {{ item.short_name }}
                           </a>
                         {%- endif %}
@@ -109,9 +109,11 @@
             <div class="one-line">
               <div class="one-line-left">
                 <textarea class="one-line-text" placeholder="Type docstring here"></textarea>
-
-                <button type="button">Submit</button>
-
+                <div class="scan-buttons">
+                  <button type="button" class="previous-button">Previous</button>
+                  <button type="button" class="next-button">Next</button>
+                  <button type="button" class="end-scan-button">End Scan</button>
+                </div>
               </div>
               <div class="one-line-right">
                 <textarea class="current-tags"></textarea>
