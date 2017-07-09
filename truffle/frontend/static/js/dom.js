@@ -13,6 +13,12 @@ $( document ).ready(function() {
 		}
 	});
 
+	$('.current-tags').tagEditor({
+	    initialTags: ['Hello', 'World', 'Example', 'Tags'],
+	    delimiter: ', ', /* space and comma */
+	    placeholder: 'Enter tags ...'
+	});
+
 	$(".scan-option").click( function (e) {
 		runScan();
 	});

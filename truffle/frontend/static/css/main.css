@@ -101,7 +101,7 @@ ul {
 	opacity: 0.7;
 }
 
-i {
+.arrow {
     border: solid black;
     border-width: 0 3px 3px 0;
     display: inline-block;
@@ -184,4 +184,29 @@ i {
 	font-weight: bold;	
 }
 
-/*.CodeMirror .cm-url { color: blue; } */
+.one-line {
+	display: none;
+	width: 100%;
+}
+
+.one-line-left {
+	float: left;
+	width: 75%;
+
+	background-color: red;
+}
+
+.one-line-text {
+	width: 100%;
+}
+
+.one-line-right {
+	float: left;
+	width: 15%;
+}
+
+textarea {
+	font-family: 'Source Code Pro', monospace;
+	/*font-size: 16px;*/
+	resize: none;
+}
