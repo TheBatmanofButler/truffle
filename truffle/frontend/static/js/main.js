@@ -140,6 +140,6 @@ function runScan() {
 	sessionStorage.setItem("scanOn", JSON.stringify(true));
 	$(".bottom-box").animate({height: "50%"});
 
-	
+	$(".one-line").show("medium");
 	// openScanPath();
 }

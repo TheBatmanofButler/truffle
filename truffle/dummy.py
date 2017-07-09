@@ -28,6 +28,8 @@ class Pet(object):
         Raises:
             None
 
+        Categories:
+            None
 
         """
         www.ganesh.com
