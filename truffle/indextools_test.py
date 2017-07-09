@@ -6,16 +6,23 @@ import unittest
 class testPywalker(unittest.TestCase):
 
     def test_get_files(self):
-        files = indextools.get_files('test_data/get_files_test_data/')
 
-        true_files = ['test_data/get_files_test_data/test4.py',
-                      'test_data/get_files_test_data/test2.py',
-                      'test_data/get_files_test_data/test1.py',
-                      'test_data/get_files_test_data/dir1/test1.py']
-        self.assertSequenceEqual(files, true_files)
+        pyfiles, tot_files = indextools.get_files(
+            'test_data/get_files_test_data/')
+
+        true_pyfiles = ['test_data/get_files_test_data/test4.py',
+                        'test_data/get_files_test_data/test2.py',
+                        'test_data/get_files_test_data/test1.py',
+                        'test_data/get_files_test_data/dir1/test1.py']
+        true_totfiles = true_pyfiles + [
+            'test_data/get_files_test_data/test3.js',
+            'test_data/get_files_test_data/dir1/test2.js']
+        self.assertItemsEqual(pyfiles, true_pyfiles)
+        self.assertItemsEqual(tot_files, true_totfiles)
 
     def test_index_code(self):
         project_index = indextools.ProjectIndex('test_data/index_test_data')
+        project_index_funcs = project_index.functions
         project_index = project_index.project_index
 
         true_keys = ['test_data.index_test_data.test1',
@@ -35,6 +42,9 @@ class testPywalker(unittest.TestCase):
                           true_keys[0] + '.MathStuff.get_vars',
                           true_keys[0] + '.MathStuff.plug_in_vars']
         self.assertItemsEqual(true_functions, functions.keys())
+        self.assertItemsEqual(true_functions, project_index_funcs)
+
+        import pdb; pdb.set_trace()
 
         true_func_obj = {
             'args': ['x', 'y'],
