@@ -59,6 +59,8 @@ class ProjectIndex(object):
         # Process calling functions.
         self._get_calling_functions()
 
+        self.forest = self._get_forest()
+
         with open(index_fname, 'w') as f:
             json.dump(self.project_index, f)
 
@@ -77,6 +79,33 @@ class ProjectIndex(object):
                 source = call['source']
                 caller = call['caller']
                 self._append_call(source, caller)
+
+    def _get_tree(self, func_name, func_obj):
+        """Gets an individual call tree."""
+        tree = {
+            'name': func_name,
+            'children': []
+        }
+
+        for call_name in func_obj['calls']:
+            # Check to make sure its a user defined function.
+            if call_name in self.functions:
+                tree['children'].append(
+                    self._get_tree(call_name, self.functions[call_name]))
+            else:
+                tree['children'].append({
+                    'name': call_name,
+                    'children': []
+                })
+        return tree
+
+    def _get_forest(self):
+        """Gets all of the individual call trees."""
+        forest = []
+        for func_name, func_obj in self.functions.iteritems():
+            if not func_obj['calling_functions']:
+                forest.append(self._get_tree(func_name, func_obj))
+        return forest
 
     def _index_code(self):
         """Returns a list of index objects."""

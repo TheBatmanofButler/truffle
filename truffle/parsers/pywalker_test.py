@@ -132,7 +132,7 @@ class testPywalker(unittest.TestCase):
         self.assertDictEqual(walker.calls, {
             'dummy_file.thisisatest.4': {
                 'source': 'dummy_file.dummy.scope.thisisatest',
-                'caller': 'dummy_file.dummy.scope'
+                'caller': 'dummy_file.dummy.scope.4'
             }
         })
 
@@ -261,11 +261,11 @@ class testPywalker(unittest.TestCase):
         true_calls = {
             'test_data.test_walk.np.random.uniform.18': {
                 'source': 'numpy.random.uniform',
-                'caller': 'test_data.test_walk.Test.thisisatest3'
+                'caller': 'test_data.test_walk.Test.thisisatest3.18'
             },
             'test_data.test_walk.thisisatest.10': {
                 'source': 'test_data.test_walk.thisisatest2.thisisatest',
-                'caller': 'test_data.test_walk.thisisatest2'
+                'caller': 'test_data.test_walk.thisisatest2.10'
             }
         }
 
