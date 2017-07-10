@@ -44,11 +44,14 @@ function setupCodeMirror() {
 		console.log(instance.getValue())
 	}
 
-	var editor = CodeMirror(document.getElementById("editor"), {
+	// global var
+	editor = CodeMirror(document.getElementById("editor"), {
 	  value: codeText,
 	  lineNumbers: true,
 	  mode: mode,
-	  theme: "base16-dark"
+	  theme: "base16-dark",
+	  readOnly: false,
+	  cursorBlinkRate: 530
 	});
 
 	editor.on("change", function() {
@@ -64,15 +67,34 @@ function setupCodeMirror() {
 		editor.execCommand("save");
 	});
 
-	hyperlinkOverlay(editor);
+	// hyperlinkOverlay(editor);
 
 	if (scanOn) {
-		var lineno = JSON.parse(sessionStorage.getItem("lineno"));
-		editor.getDoc().addLineClass(lineno, "gutter", "selected-line-gutter");
-		editor.getDoc().addLineClass(lineno, "background", "selected-line-background");
-		editor.scrollIntoView(lineno - 1, 1);
+		editor.setOption("readOnly", true);
+		editor.setOption("cursorBlinkRate", -1);
+
+		moveToNewLine();
 	}
 }
+
+function removeLineStyling() {
+	var lineno = JSON.parse(sessionStorage.getItem("lineno")) - 1;
+	editor.getDoc().removeLineClass(lineno, "gutter", "selected-line-gutter");
+	editor.getDoc().removeLineClass(lineno, "background", "selected-line-background");
+}
+
+function moveToNewLine() {
+	var lineno = JSON.parse(sessionStorage.getItem("lineno")) - 1;
+	editor.getDoc().addLineClass(lineno, "gutter", "selected-line-gutter");
+	editor.getDoc().addLineClass(lineno, "background", "selected-line-background");
+	lineScroll(lineno, editor);
+}
+
+function lineScroll(i) { 
+	var t = editor.charCoords({line: i, ch: 0}, "local").top; 
+	var middleHeight = editor.getScrollerElement().offsetHeight / 2; 
+	editor.scrollTo(null, t - middleHeight - 5); 
+} 
 
 function setupFilePanel() {
 	$(".file-panel li").click(function (e) {
@@ -135,6 +157,11 @@ function openScanPath() {
 	}
 
 	var linenoPath = scanFunctions[pathToKey(nextLocation)]
+	if (!linenoPath.length) {
+		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		nextScanPath()
+		return;
+	}
 	var nextLineno = linenoPath.shift();
 	
 	sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
@@ -146,17 +173,54 @@ function openScanPath() {
 }
 
 function nextScanPath() {
+
 	var linenoPath = JSON.parse(sessionStorage.getItem("linenoPath"));
 
-	if (linenoPath) {
+	if (linenoPath.length) {
+		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+
+		var nextLineno = linenoPath.shift();
+		
+		removeLineStyling();
+		
+		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
+
+		var nextPage = window.location.origin + fileName + "." + nextLineno;
+		window.history.pushState("", "", nextPage);
+		moveToNewLine();
+	}
+	else {
+		var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
+		var fileName = getNextFileName()
+		linenoPath = scanFunctions[pathToKey(fileName)]
+
 		var nextLineno = linenoPath.shift();
 		
 		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
 		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
 		
-		editor.scrollIntoView(nextLineno - 1, 1);
-		console.log(nextLineno);
+		var nextPage = window.location.origin + fileName + "." + nextLineno;
+		goToPage(nextPage)
 	}
+}
+
+function getNextFileName() {
+	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
+
+	if (!scanPath.length) {
+		alert("All files scanned.")
+		endScan();
+		return;
+	}
+
+	var scanIndex = scanPath.indexOf(fileName);
+	if (scanIndex == scanPath.length - 1) {
+		scanIndex = -1;
+	}
+
+	return scanPath[scanIndex + 1]	
 }
 
 function pathToKey(filepath) {

@@ -33,6 +33,10 @@ $( document ).ready(function() {
 		}
 	});
 
+	$(".next-button").click( function () {
+		nextScanPath();
+	})
+
 	$(".flow-option").click(function(e) {
 		loadCallGraph()
 	});
