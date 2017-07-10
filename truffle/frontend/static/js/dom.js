@@ -29,6 +29,10 @@ $( document ).ready(function() {
 		}
 	});
 
+	$(".flow-option").click(function(e) {
+		loadCallGraph()
+	});
+
 	$(".end-scan-button").click( function () {
 		console.log(222)
 		endScan();
