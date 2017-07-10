@@ -13,38 +13,43 @@
     <link href="https://fonts.googleapis.com/css?family=Jaldi" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
 
-  <style>
-		
+		<style>
+  
 		.node {
 			cursor: pointer;
 		}
 
+		.overlay{
+				background-color:#EEE;
+		}
+		 
 		.node circle {
 			fill: #fff;
 			stroke: steelblue;
-			stroke-width: 3px;
+			stroke-width: 1.5px;
 		}
-
+		 
 		.node text {
-			font: 12px sans-serif;
+			font-size:10px; 
+			font-family:sans-serif;
 		}
-
+		 
 		.link {
 			fill: none;
 			stroke: #ccc;
-			stroke-width: 2px;
-		}
-	
+			stroke-width: 1.5px;
+		}		
+
     </style>
 
     <script>
       var forest = {{ forest | tojson | safe }};
+      var rootDir = {{ rootDir | tojson | safe }};
     </script>
 	</head>
 
 	<body>
-
-		test
+    <div id="tree-container"></div>
 		<script type="text/javascript" src="{{ url_for('static', filename = 'js/forest.js') }}"></script>
 	</body>
 

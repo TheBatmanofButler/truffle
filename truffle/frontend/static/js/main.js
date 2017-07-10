@@ -212,7 +212,5 @@ function runSearch(query) {
 }
 
 function loadCallGraph() {
-	$.getJSON('/_flow_tree', function(data) {
-		console.log(data);
-	});
+	var win = window.open(window.location.origin + '/_flow_tree')
 }
