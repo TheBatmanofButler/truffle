@@ -13,11 +13,14 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/jquery.tag-editor.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/main.css') }}">
 
-    <script src="{{ url_for('static', filename = 'js/lib/codemirror.js') }}"></script>
-    <script src="{{ url_for('static', filename = 'js/lib/show-hint.js') }}"></script>
-    <script src="{{ url_for('static', filename = 'js/lib/python.js') }}"></script>
-    <script src="{{ url_for('static', filename = 'js/lib/javascript.js') }}"></script>
-    <script src="{{ url_for('static', filename = 'js/lib/xml.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/lib/codemirror.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/lib/show-hint.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/lib/python.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/lib/javascript.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/lib/xml.js') }}"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.caret.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.tag-editor.min.js') }}"></script>
 
     <link href="https://fonts.googleapis.com/css?family=Jaldi" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
@@ -143,8 +146,7 @@
         </div>
     </div>
 
-    <script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.caret.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.tag-editor.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename = 'js/global.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/hyperlink.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/comments.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename = 'js/main.js') }}"></script>

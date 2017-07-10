@@ -22,7 +22,7 @@ function codeChange(editor, codeIsChanged) {
 	sessionStorage.setItem("codeIsChanged", JSON.stringify(codeIsChanged));
 	setDirectoryTreeLinkBackground();
 }
-var editor;
+
 function setupCodeMirror() {
 	var mode;
 	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
@@ -44,6 +44,7 @@ function setupCodeMirror() {
 		console.log(instance.getValue())
 	}
 
+	// global var
 	editor = CodeMirror(document.getElementById("editor"), {
 	  value: codeText,
 	  lineNumbers: true,
@@ -66,18 +67,34 @@ function setupCodeMirror() {
 		editor.execCommand("save");
 	});
 
-	hyperlinkOverlay(editor);
+	// hyperlinkOverlay(editor);
 
 	if (scanOn) {
 		editor.setOption("readOnly", true);
 		editor.setOption("cursorBlinkRate", -1);
 
-		var lineno = JSON.parse(sessionStorage.getItem("lineno")) - 1;
-		editor.getDoc().addLineClass(lineno, "gutter", "selected-line-gutter");
-		editor.getDoc().addLineClass(lineno, "background", "selected-line-background");
-		editor.scrollIntoView(lineno, 1);
+		moveToNewLine();
 	}
 }
+
+function removeLineStyling() {
+	var lineno = JSON.parse(sessionStorage.getItem("lineno")) - 1;
+	editor.getDoc().removeLineClass(lineno, "gutter", "selected-line-gutter");
+	editor.getDoc().removeLineClass(lineno, "background", "selected-line-background");
+}
+
+function moveToNewLine() {
+	var lineno = JSON.parse(sessionStorage.getItem("lineno")) - 1;
+	editor.getDoc().addLineClass(lineno, "gutter", "selected-line-gutter");
+	editor.getDoc().addLineClass(lineno, "background", "selected-line-background");
+	lineScroll(lineno, editor);
+}
+
+function lineScroll(i) { 
+	var t = editor.charCoords({line: i, ch: 0}, "local").top; 
+	var middleHeight = editor.getScrollerElement().offsetHeight / 2; 
+	editor.scrollTo(null, t - middleHeight - 5); 
+} 
 
 function setupFilePanel() {
 	$(".file-panel li").click(function (e) {
@@ -164,11 +181,14 @@ function nextScanPath() {
 
 		var nextLineno = linenoPath.shift();
 		
+		removeLineStyling();
+		
 		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
 		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
-		
+
 		var nextPage = window.location.origin + fileName + "." + nextLineno;
-		goToPage(nextPage)
+		window.history.pushState("", "", nextPage);
+		moveToNewLine();
 	}
 	else {
 		var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
