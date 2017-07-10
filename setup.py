@@ -1,3 +1,4 @@
+import setuptools
 from setuptools import setup
 
 def readme():
@@ -7,15 +8,14 @@ def readme():
 setup(name='truffle',
       version='0.1dev',
       description='Code search, documentation aid, code visualizer',
-      entry_points = {
-        'console_scripts': ['truffle=truffle.app:main'],
+      entry_points={
+          'console_scripts': ['truffle=truffle.app:main'],
       },
       url='',
       author='1traintech',
       author_email='onetraintech@gmail.com',
-      packages=['truffle','truffle/parsers'],
+      packages=setuptools.find_packages(),
       dependency_links=[],
-      install_requires=[],
+      install_requires=['flask', 'whoosh'],
       include_package_data=True,
-      scripts=['bin/truffle'],
       zip_safe=False)

@@ -2,4 +2,4 @@
 
 import truffle
 
-print truffle.helloworld()
+truffle.main()

@@ -10,13 +10,15 @@ from whoosh.index import create_in
 from whoosh.fields import *
 from whoosh.qparser import QueryParser
 
-import global_constants as gc
+import os
+
+INDEX_DIR = os.path.join(os.path.dirname(__file__), 'indexdir')
 
 def index_text(files):
     """Goes through all files passed in and indexes text"""
     schema = Schema(path=ID(stored=True), last_mod=NUMERIC(stored=True),
                     content=TEXT)
-    ix = create_in(gc.INDEX_DIR, schema)
+    ix = create_in(INDEX_DIR, schema)
     writer = ix.writer()
 
     for f in files:
