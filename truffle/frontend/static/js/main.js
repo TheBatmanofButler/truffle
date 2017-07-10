@@ -183,12 +183,19 @@ function endScan() {
 }
 
 function runSearch(query) {
-	console.log('howdy');
-	$.post('/_run_search', {'query': query}, function(response) {
-		console.log(response)
-	});
+	window.open(window.location.origin + '/_run_search?query=' + query);
+}
+
+function loadSearchResults() {
+	console.log(searchResults);
+	for (hit in searchResults) {
+		$('#editor').append('<div class="search-result-file">' + hit + '<br></div>')
+		$('#editor').append('<div class="search-result">' + searchResults[
+			hit]['highlight'] + '<br></div>')
+		console.log(hit)
+	}
 }
 
 function loadCallGraph() {
-	var win = window.open(window.location.origin + '/_flow_tree')
+	window.open(window.location.origin + '/_flow_tree')
 }

@@ -3,7 +3,11 @@ $( document ).ready(function() {
 	sessionStorage.setItem("codeIsChanged", JSON.stringify(false));
 	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
 
-	setupCodeMirror();
+	if (searchResults)
+		loadSearchResults();
+	else
+		setupCodeMirror();
+
 	setDirectoryTreeLinkBackground();
 	setupFilePanel();
 
@@ -39,7 +43,27 @@ $( document ).ready(function() {
 	})
 
 	$(".search-option").click( function (e) {
-		runSearch();
+		$('.search-overlay').fadeIn();
+		$('.search').focus();
+	});
+
+	$(".search").click( function (e) {
+		event.stopPropagation();
+	});
+
+	$(".search").keypress( function (e) {
+		if (e.which == 13) {
+			if ($(this).val()) {
+				runSearch($(this).val());
+				$('.search-overlay').click()
+			}
+		}
+	});
+
+	$(".search-overlay").click( function(e) {
+		$('.search-overlay').fadeOut(function() {
+			$('.search').val('');
+		});
 	});
 
 	if (scanOn) {

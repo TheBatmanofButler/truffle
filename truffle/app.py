@@ -27,7 +27,7 @@ def index(file_name = "", lineno = None):
 
     return render_template("index.html", directory_tree=directory_tree,
                            file_name=file_name, lineno=lineno,
-                           code_text=code_text)
+                           code_text=code_text, search_results=None)
 
 @app.route("/_get_scan_data", methods=["GET"])
 def _get_scan_data():
@@ -46,11 +46,11 @@ def _post_saved_file():
 
 @app.route("/_run_search", methods=["GET", "POST"])
 def _run_search():
-    query = request.form["query"]
-    print query
+    query = request.args.get('query', None)
     hits = text_index.search_text(project_index.text_searcher, query)
-    print hits
-    return jsonify(hits)
+    return render_template("index.html", directory_tree=directory_tree,
+                           file_name='', lineno='', code_text='',
+                           search_results=hits)
 
 @app.route("/_flow_tree", methods=["GET"])
 def _get_function_tree():
