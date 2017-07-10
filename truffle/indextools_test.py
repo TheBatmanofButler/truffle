@@ -21,7 +21,12 @@ class testPywalker(unittest.TestCase):
         self.assertItemsEqual(tot_files, true_totfiles)
 
     def test_index_code(self):
+        """Read through all of the code in test_data/index_test_data, and test.
+
+        Checks against functions, vars, imports, calls. Also call graph.
+        """
         project_index = indextools.ProjectIndex('test_data/index_test_data')
+        forest = project_index.forest
         project_index_funcs = project_index.functions
         project_index = project_index.project_index
 
@@ -43,8 +48,6 @@ class testPywalker(unittest.TestCase):
                           true_keys[0] + '.MathStuff.plug_in_vars']
         self.assertItemsEqual(true_functions, functions.keys())
         self.assertItemsEqual(true_functions, project_index_funcs)
-
-        import pdb; pdb.set_trace()
 
         true_func_obj = {
             'args': ['x', 'y'],
@@ -177,6 +180,37 @@ class testPywalker(unittest.TestCase):
 
         self.assertDictEqual(import_mod, {'test1': 'test1'})
         self.assertDictEqual(import_from, {'MathStuff': ('MathStuff', 'test1')})
+
+        # Known bugs:
+        #   Does not handle calls through object attributes.
+        #   Does not handle calls from a file global scope.
+        true_forest = [
+            {
+                'name': 'test_data.index_test_data.test1.MathStuff.__init__',
+                'children': [{
+                    'name': ('test_data.index_test_data.test1.MathStuff.'
+                             '__init__.algebra.split'),
+                    'children': []
+                }]
+            },
+            {
+                'name': 'test_data.index_test_data.test1.MathStuff.get_vars',
+                'children': []
+            },
+            {
+                'name': 'test_data.index_test_data.test1.add',
+                'children': []
+            },
+            {
+                'name': 'test_data.index_test_data.test1.MathStuff.plug_in_vars',
+                'children': [{
+                    'name': ('test_data.index_test_data.test1.MathStuff.'
+                             'plug_in_vars.enumerate'),
+                    'children': []
+                }]
+            }]
+
+        self.assertItemsEqual(forest, true_forest)
 
 if __name__ == '__main__':
     unittest.main()

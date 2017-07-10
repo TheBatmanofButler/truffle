@@ -54,7 +54,7 @@ def _run_search():
 
 @app.route("/_flow_tree", methods=["GET"])
 def _get_function_tree():
-    return jsonify(project_index.functions)
+    return render_template("callgraph.html", forest=project_index.forest)
 
 def main():
     print app.root_path
