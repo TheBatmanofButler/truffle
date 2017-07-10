@@ -8,8 +8,8 @@ SUPPORTED_LANGS_REGEX = (".py$")
 
 TRUFFLE_DOCSTRING_REGEX = ("Description:((\n)|.)*Args:((\n)|.)*Returns:((\n)|.)*Raises:((\n)|.)*")
 
-# FILEPATH ="/Users/ganeshravichandran/Dropbox/Code/truffle/truffle/"
-FILEPATH ='/home/amol/Code/repos/1train/truffle/truffle'
+FILEPATH ="/Users/ganeshravichandran/Dropbox/Code/truffle/truffle/"
+# FILEPATH ='/home/amol/Code/repos/1train/truffle/truffle'
 
 INCLUDE_LIST = [".py$", ".md$", ".txt$", ".js$", ".html$", ".htm$", ".css$"]
 

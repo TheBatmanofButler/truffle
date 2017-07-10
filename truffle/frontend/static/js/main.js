@@ -1,10 +1,10 @@
 function setDirectoryTreeLinkBackground() {
-	var selectedLink = JSON.parse(localStorage.getItem("selectedLink"));
+	var selectedLink = JSON.parse(sessionStorage.getItem("selectedLink"));
 	if (selectedLink) {
 		$("#" + selectedLink).css("font-weight", "bold");
 
-		var codeIsChanged = JSON.parse(localStorage.getItem("codeIsChanged"));
-		var selectedFilename = localStorage.getItem("selectedFilename");
+		var codeIsChanged = JSON.parse(sessionStorage.getItem("codeIsChanged"));
+		var selectedFilename = sessionStorage.getItem("selectedFilename");
 		if (codeIsChanged) {
 			$("#" + selectedLink).text( function() {
 				return selectedFilename + "*";
@@ -19,27 +19,28 @@ function setDirectoryTreeLinkBackground() {
 }
 
 function codeChange(editor, codeIsChanged) {
-	localStorage.setItem("codeIsChanged", JSON.stringify(codeIsChanged));
+	sessionStorage.setItem("codeIsChanged", JSON.stringify(codeIsChanged));
 	setDirectoryTreeLinkBackground();
 }
 
 function setupCodeMirror() {
 	var mode;
-	var codeMirrorLineNo = parseInt(getScanLineNo(window.location.href)) - 1;
 	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
+	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+	var codeText = JSON.parse(sessionStorage.getItem("codeText"));
 
-	if (filename.includes(".py")) {
+	if (fileName.includes(".py")) {
 		mode = "python";
 	}
-	else if (filename.includes(".js")) {
+	else if (fileName.includes(".js")) {
 		mode = "javascript";
 	}
-	else if (filename.includes(".html")) {
+	else if (fileName.includes(".html")) {
 		mode = "xml";
 	}
 
 	CodeMirror.commands.save = function(instance) {
-		postSavedFile(filename, instance.getValue());
+		postSavedFile(fileName, instance.getValue());
 		console.log(instance.getValue())
 	}
 
@@ -66,9 +67,10 @@ function setupCodeMirror() {
 	hyperlinkOverlay(editor);
 
 	if (scanOn) {
-		editor.getDoc().addLineClass(codeMirrorLineNo, "gutter", "selected-line-gutter");
-		editor.getDoc().addLineClass(codeMirrorLineNo, "background", "selected-line-background");
-		editor.scrollIntoView(codeMirrorLineNo, 1);
+		var lineno = JSON.parse(sessionStorage.getItem("lineno"));
+		editor.getDoc().addLineClass(lineno, "gutter", "selected-line-gutter");
+		editor.getDoc().addLineClass(lineno, "background", "selected-line-background");
+		editor.scrollIntoView(lineno - 1, 1);
 	}
 }
 
@@ -82,9 +84,9 @@ function setupFilePanel() {
 
 		if ($(this).attr("id")) {
 			var selectedLink = $(this).attr("id")
-			localStorage.setItem("selectedLink", JSON.stringify(selectedLink));
+			sessionStorage.setItem("selectedLink", JSON.stringify(selectedLink));
 			console.log($.trim($("#" + selectedLink).text()))
-			localStorage.setItem("selectedFilename", $.trim($("#" + selectedLink).text()));
+			sessionStorage.setItem("selectedFilename", $.trim($("#" + selectedLink).text()));
 		}
 
 	});
@@ -94,54 +96,90 @@ function setupFilePanel() {
 	});
 }
 
-function getScanLineNo(url) {
-	var urlArray = url.split("."),
-		lineno = urlArray[urlArray.length - 1];
-
-	return lineno;
-}
-
 function getScanPathUrl(url) {
 	var filenameEndIndex = url.indexOf(".py") + 3,
 		filename = url.substring(0,filenameEndIndex),
-		lineno = getScanLineNo(url),
 		scanPathUrl = filename + "." + lineno;
 
 	return scanPathUrl;
 }
 
-function getScanPath() {
-	$.getJSON('/_get_scan_path', function(data) {
-		sessionStorage.setItem("scanPath", JSON.stringify(data));
-		sessionStorage.setItem("scanIndex", JSON.stringify(0));
-		runScan();
+function getScanData() {
+	$.getJSON('/_get_scan_data', function(data) {
+		console.log(data);
+		sessionStorage.setItem("scanFunctions", JSON.stringify(data.scanFunctions));
+		sessionStorage.setItem("scanPath", JSON.stringify(data.scanPath));
+		openScanPath();
 	});
 }
 
 function postSavedFile(filename, codeText) {
 	$.post('/_post_saved_file', {"filename": filename, "code_text": codeText}, function(response) {
-		console.log(response);
-		localStorage.setItem("codeIsChanged", JSON.stringify(false));
+		sessionStorage.setItem("codeIsChanged", JSON.stringify(false));
 		setDirectoryTreeLinkBackground();
 		alert("File Saved")
 	});
 }
 
 function openScanPath() {
-	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
-	var scanIndex = JSON.parse(sessionStorage.getItem("scanIndex"));
-	var scanPathUrl = getScanPathUrl(scanPath[scanIndex]);
 
-	sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex + 1));
-	window.open(scanPathUrl, "_self");
+	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
+	var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
+	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+
+	if (!fileName) {
+		var nextLocation = scanPath[0];
+	}
+	else {
+		var nextLocation = fileName;
+	}
+
+	var linenoPath = scanFunctions[pathToKey(nextLocation)]
+	var nextLineno = linenoPath.shift();
+	
+	sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+	sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
+
+	var nextPage = window.location.origin + nextLocation + "." + nextLineno;
+
+	goToPage(nextPage)
+}
+
+function nextScanPath() {
+	var linenoPath = JSON.parse(sessionStorage.getItem("linenoPath"));
+
+	if (linenoPath) {
+		var nextLineno = linenoPath.shift();
+		
+		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
+		
+		editor.scrollIntoView(nextLineno - 1, 1);
+		console.log(nextLineno);
+	}
+}
+
+function pathToKey(filepath) {
+	return filepath.split("/").join(".").slice(0, -3)
+}
+
+function goToPage(url) {
+	window.open(url, "_self");
 }
 
 function runScan() {
 	sessionStorage.setItem("scanOn", JSON.stringify(true));
-	$(".bottom-box").animate({height: "50%"});
+	getScanData();
+}
 
-	$(".one-line").show("medium");
-	// openScanPath();
+function endScan() {
+	$(".one-line").hide();
+	$(".bottom-box").animate({height: "0"}, function () {
+		sessionStorage.setItem("scanOn", JSON.stringify(false));
+		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+		var nextPage = window.location.origin + fileName;
+		goToPage(nextPage);
+	});
 }
 
 function runSearch(query) {
