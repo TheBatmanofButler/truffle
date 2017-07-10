@@ -250,25 +250,43 @@ function previousScanPath() {
 		sessionStorage.setItem("lineno", JSON.stringify(previousLineno));
 		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
 
-		var nextPage = window.location.origin + fileName + "." + previousLineno;
-		window.history.pushState("", "", nextPage);
+		var previousPage = window.location.origin + fileName + "." + previousLineno;
+		window.history.pushState("", "", previousPage);
 		moveToNewLine();
 	}
 	else {
-		// reverseLinenoPath = [];
-		// var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
-		// var fileName = getNextFileName()
-		// linenoPath = scanFunctions[pathToKey(fileName)]
+		linenoPath = [];
+		var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
+		var fileName = getPreviousFileName()
+		reverseLinenoPath = scanFunctions[pathToKey(fileName)]
 
-		// var nextLineno = linenoPath.shift();
+		var previousLineno = reverseLinenoPath.pop();
 		
-		// sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
-		// sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
-		// sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
+		sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
+		sessionStorage.setItem("lineno", JSON.stringify(previousLineno));
+		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
 		
-		// var nextPage = window.location.origin + fileName + "." + nextLineno;
-		// goToPage(nextPage)
+		var previousPage = window.location.origin + fileName + "." + previousLineno;
+		goToPage(previousPage)
 	}
+}
+
+function getPreviousFileName() {
+	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
+
+	if (!scanPath.length) {
+		alert("All files scanned.")
+		endScan();
+		return;
+	}
+
+	var scanIndex = scanPath.indexOf(fileName);
+	if (scanIndex == 0) {
+		scanIndex = scanPath.length;
+	}
+
+	return scanPath[scanIndex - 1]	
 }
 
 function pathToKey(filepath) {
