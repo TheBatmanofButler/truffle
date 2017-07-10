@@ -48,7 +48,9 @@ function setupCodeMirror() {
 	  value: codeText,
 	  lineNumbers: true,
 	  mode: mode,
-	  theme: "base16-dark"
+	  theme: "base16-dark",
+	  readOnly: false,
+	  cursorBlinkRate: 530
 	});
 
 	editor.on("change", function() {
@@ -67,6 +69,9 @@ function setupCodeMirror() {
 	hyperlinkOverlay(editor);
 
 	if (scanOn) {
+		editor.setOption("readOnly", true);
+		editor.setOption("cursorBlinkRate", -1);
+
 		var lineno = JSON.parse(sessionStorage.getItem("lineno")) - 1;
 		editor.getDoc().addLineClass(lineno, "gutter", "selected-line-gutter");
 		editor.getDoc().addLineClass(lineno, "background", "selected-line-background");
@@ -135,6 +140,11 @@ function openScanPath() {
 	}
 
 	var linenoPath = scanFunctions[pathToKey(nextLocation)]
+	if (!linenoPath.length) {
+		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		nextScanPath()
+		return;
+	}
 	var nextLineno = linenoPath.shift();
 	
 	sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
@@ -178,7 +188,19 @@ function nextScanPath() {
 function getNextFileName() {
 	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
 	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
-	return scanPath[scanPath.indexOf(fileName) + 1]	
+
+	if (!scanPath.length) {
+		alert("All files scanned.")
+		endScan();
+		return;
+	}
+
+	var scanIndex = scanPath.indexOf(fileName);
+	if (scanIndex == scanPath.length - 1) {
+		scanIndex = -1;
+	}
+
+	return scanPath[scanIndex + 1]	
 }
 
 function pathToKey(filepath) {
