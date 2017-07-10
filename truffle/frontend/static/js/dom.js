@@ -35,16 +35,19 @@ $( document ).ready(function() {
 
 	$(".next-button").click( function () {
 		nextScanPath();
-	})
+	});
+
+	$(".previous-button").click( function () {
+		previousScanPath();
+	});
 
 	$(".flow-option").click(function(e) {
-		loadCallGraph()
+		loadCallGraph();
 	});
 
 	$(".end-scan-button").click( function () {
-		console.log(222)
 		endScan();
-	})
+	});
 
 	$(".search-option").click( function (e) {
 		$('.search-overlay').fadeIn();

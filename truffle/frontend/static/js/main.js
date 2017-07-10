@@ -156,7 +156,9 @@ function openScanPath() {
 		var nextLocation = fileName;
 	}
 
-	var linenoPath = scanFunctions[pathToKey(nextLocation)]
+	var linenoPath = scanFunctions[pathToKey(nextLocation)];
+	var reverseLinenoPath = [];
+
 	if (!linenoPath.length) {
 		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
 		nextScanPath()
@@ -165,6 +167,7 @@ function openScanPath() {
 	var nextLineno = linenoPath.shift();
 	
 	sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+	sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
 	sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
 
 	var nextPage = window.location.origin + nextLocation + "." + nextLineno;
@@ -175,8 +178,11 @@ function openScanPath() {
 function nextScanPath() {
 
 	var linenoPath = JSON.parse(sessionStorage.getItem("linenoPath"));
+	var currentLineno = JSON.parse(sessionStorage.getItem("lineno"));
+	var reverseLinenoPath = JSON.parse(sessionStorage.getItem("reverseLinenoPath"));
 
 	if (linenoPath.length) {
+		reverseLinenoPath.push(currentLineno);
 		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
 
 		var nextLineno = linenoPath.shift();
@@ -184,6 +190,7 @@ function nextScanPath() {
 		removeLineStyling();
 		
 		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
 		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
 
 		var nextPage = window.location.origin + fileName + "." + nextLineno;
@@ -191,6 +198,7 @@ function nextScanPath() {
 		moveToNewLine();
 	}
 	else {
+		reverseLinenoPath = [];
 		var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
 		var fileName = getNextFileName()
 		linenoPath = scanFunctions[pathToKey(fileName)]
@@ -198,6 +206,7 @@ function nextScanPath() {
 		var nextLineno = linenoPath.shift();
 		
 		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
 		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
 		
 		var nextPage = window.location.origin + fileName + "." + nextLineno;
@@ -221,6 +230,45 @@ function getNextFileName() {
 	}
 
 	return scanPath[scanIndex + 1]	
+}
+
+function previousScanPath() {
+
+	var reverseLinenoPath = JSON.parse(sessionStorage.getItem("reverseLinenoPath"));
+	var currentLineno = JSON.parse(sessionStorage.getItem("lineno"));
+	var linenoPath = JSON.parse(sessionStorage.getItem("linenoPath"));
+
+	if (reverseLinenoPath.length) {
+		linenoPath.unshift(currentLineno);
+		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+
+		var previousLineno = reverseLinenoPath.pop();
+		
+		removeLineStyling();
+		
+		sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
+		sessionStorage.setItem("lineno", JSON.stringify(previousLineno));
+		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+
+		var nextPage = window.location.origin + fileName + "." + previousLineno;
+		window.history.pushState("", "", nextPage);
+		moveToNewLine();
+	}
+	else {
+		// reverseLinenoPath = [];
+		// var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
+		// var fileName = getNextFileName()
+		// linenoPath = scanFunctions[pathToKey(fileName)]
+
+		// var nextLineno = linenoPath.shift();
+		
+		// sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		// sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
+		// sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
+		
+		// var nextPage = window.location.origin + fileName + "." + nextLineno;
+		// goToPage(nextPage)
+	}
 }
 
 function pathToKey(filepath) {
