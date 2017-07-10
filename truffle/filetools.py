@@ -23,7 +23,7 @@ def _get_short_name(long_name):
     return short_name
 
 def _is_included(text):
-    """Returns True if .py file, False otherwise"""
+    """Returns True if should be included, False otherwise"""
 
     for reg in global_constants.INCLUDE_LIST:
     	if re.search(reg, text):
@@ -57,7 +57,7 @@ def _get_directory_tree(path):
     return tree
 
 def get_directory_tree(path):
-    """Returns dictionary of .py files in the given directory"""
+    """Returns dictionary of files in the given directory"""
 
     global_constants.COUNT_ID = 0
     return _get_directory_tree(path)
@@ -67,10 +67,10 @@ def _is_commentable(filename):
         return True
     return False
 
-def _get_name(filename, function_info):
+def _get_name(node_name):
     """Returns complete name of function to search function data structure"""
 
-    return filename + "." + function_info[0] + "." + str(function_info[1])
+    return node_name.replace("/", ".")[:len(node_name) - 3]
 
 def needsDocumentation(docstring):
     if docstring:
@@ -79,17 +79,18 @@ def needsDocumentation(docstring):
 
     return True
 
-def get_scan_path(directory_tree, indexed_files, indexed_functions):
+def get_scan_data(directory_tree, project_index):
     """Returns list of functions to scan through"""
 
     node = directory_tree
 
     visited = set()
-    queue = deque([node])
+    stack = [node]
+    scan_functions = {}
     scan_path = []
 
-    while len(queue) > 0:
-        node = queue.popleft()
+    while len(stack) > 0:
+        node = stack.pop()
         node_name = node["name"]
 
         if node_name in visited:
@@ -98,20 +99,19 @@ def get_scan_path(directory_tree, indexed_files, indexed_functions):
         visited.add(node_name)
 
         if _is_commentable(node_name):
-            functions_from_file = indexed_files[node_name]
-            for function_info in functions_from_file:
-                function_name = _get_name(node_name, function_info)
-
-                # to be modded once we have a way to construct function keys with scope
-                for k in indexed_functions:
-                    if k.find(function_name) != -1 and k.find(node_name) != -1:
-                        docstring = indexed_functions[k]["docstring"]
-                        if needsDocumentation(docstring):
-                            scan_path.append(function_name)
+            key = _get_name(node_name)
+            scan_path.append(node_name)
+            scan_functions[key] = []
+            file_data = project_index[key]["functions"]
+            for function_name in file_data:
+                function_data = file_data[function_name]
+                lineno = function_data["lineno"]
+                scan_functions[key].append(lineno)
+            scan_functions[key].sort()
 
         if "children" in node:
             for i in node["children"]:
                 if i["name"] not in visited:
-                    queue.append(i)
+                    stack.append(i)
 
-    return scan_path
+    return scan_functions, scan_path[::-1]

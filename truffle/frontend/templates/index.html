@@ -23,10 +23,10 @@
     <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
 
     <script>
-      var codeText = {{ code_text | tojson | safe }};
-      var filename = {{ filename | tojson | safe }};
-      var lineno = {{ lineno | tojson | safe }};
-      var directoryTree = {{ directory_tree | tojson | safe }};
+      sessionStorage.setItem("codeText", JSON.stringify({{ code_text | tojson | safe }}));
+      sessionStorage.setItem("fileName", JSON.stringify({{ file_name | tojson | safe }}));
+      sessionStorage.setItem("lineno", JSON.stringify({{ lineno | tojson | safe }}));
+      sessionStorage.setItem("directoryTree", JSON.stringify({{ directory_tree | tojson | safe }}));
     </script>
 
 	</head>
@@ -65,7 +65,7 @@
       
                         {% else %}
                           <!-- link for name of item -->
-                          <a href="{{ url_for('get_code', filename=item.name[1:]) }}">
+                          <a href="{{ url_for('index', file_name=item.name[1:]) }}">
                             {{ item.short_name }}
                           </a>
                         {%- endif %}
@@ -76,27 +76,27 @@
               </li>
             </ul>
           </div>
-          <div class="buttons-box">
-            <div class="button scan-option">
+          <div class="options-box">
+            <div class="option scan-option">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8">
                 <path d="M0 0v2h.5c0-.55.45-1 1-1h1.5v5.5c0 .28-.22.5-.5.5h-.5v1h4v-1h-.5c-.28 0-.5-.22-.5-.5v-5.5h1.5c.55 0 1 .45 1 1h.5v-2h-8z" />
               </svg>
             </div>
-            <div class="button flow-option">
+            <div class="option flow-option">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8">
                 <path d="M1.5 0c-.83 0-1.5.67-1.5 1.5 0 .66.41 1.2 1 1.41v2.19c-.59.2-1 .75-1 1.41 0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5c0-.6-.34-1.1-.84-1.34.09-.09.21-.16.34-.16h2c.82 0 1.5-.68 1.5-1.5v-.59c.59-.2 1-.75 1-1.41 0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5c0 .66.41 1.2 1 1.41v.59c0 .28-.22.5-.5.5h-2c-.17 0-.35.04-.5.09v-1.19c.59-.2 1-.75 1-1.41 0-.83-.67-1.5-1.5-1.5z"
                 />
               </svg>
             </div>
-            <div class="button search-option">
+            <div class="option save-option">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8">
+                <path d="M6.41 0l-.69.72-2.78 2.78-.81-.78-.72-.72-1.41 1.41.72.72 1.5 1.5.69.72.72-.72 3.5-3.5.72-.72-1.44-1.41z" transform="translate(0 1)" />
+              </svg>
+            </div>
+            <div class="option search-option">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8">
                 <path d="M3.5 0c-1.93 0-3.5 1.57-3.5 3.5s1.57 3.5 3.5 3.5c.59 0 1.17-.14 1.66-.41a1 1 0 0 0 .13.13l1 1a1.02 1.02 0 1 0 1.44-1.44l-1-1a1 1 0 0 0-.16-.13c.27-.49.44-1.06.44-1.66 0-1.93-1.57-3.5-3.5-3.5zm0 1c1.39 0 2.5 1.11 2.5 2.5 0 .66-.24 1.27-.66 1.72-.01.01-.02.02-.03.03a1 1 0 0 0-.13.13c-.44.4-1.04.63-1.69.63-1.39 0-2.5-1.11-2.5-2.5s1.11-2.5 2.5-2.5z"
                 />
-              </svg>
-            </div>
-            <div class="button save-option">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 8 8">
-                <path d="M6.41 0l-.69.72-2.78 2.78-.81-.78-.72-.72-1.41 1.41.72.72 1.5 1.5.69.72.72-.72 3.5-3.5.72-.72-1.44-1.41z" transform="translate(0 1)" />
               </svg>
             </div>
           </div>
@@ -108,7 +108,11 @@
 
             <div class="one-line">
               <div class="one-line-left">
-                <textarea class="one-line-text" placeholder="Type docstring here"></textarea>
+                <div class="one-line-text-wrapper">
+                  <textarea class="one-line-text" placeholder="Type docstring here"></textarea>
+                </div>
+                <div class="calling-functions-box">
+                </div>
                 <div class="scan-buttons">
                   <button type="button" class="previous-button">Previous</button>
                   <button type="button" class="next-button">Next</button>
@@ -116,8 +120,22 @@
                 </div>
               </div>
               <div class="one-line-right">
-                <textarea class="current-tags"></textarea>
-                <textarea class="previous-tags"></textarea>
+                <div class="current-tags-wrapper">
+                  <textarea class="current-tags"></textarea>
+                </div>
+                <div class="previous-tags-wrapper">
+                  <div class="previous-tags">
+                    <div class="previous-tag">one thing</div>
+                    <div class="previous-tag">another thing</div>
+                    <div class="previous-tag">a third thing</div>
+                    <div class="previous-tag">a third thing</div>
+                    <div class="previous-tag">a third thing</div>
+                    <div class="previous-tag">a third thing</div>
+                    <div class="previous-tag">a third thing</div>
+                    <div class="previous-tag">a third thing</div>
+                    <div class="previous-tag">a third thing</div>
+                  </div>
+                </div>
               </div>
             </div>
 
