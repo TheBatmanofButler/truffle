@@ -29,6 +29,10 @@ $( document ).ready(function() {
 		}
 	});
 
+	$(".next-button").click( function () {
+		nextScanPath();
+	})
+
 	$(".end-scan-button").click( function () {
 		console.log(222)
 		endScan();

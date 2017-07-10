@@ -22,7 +22,7 @@ function codeChange(editor, codeIsChanged) {
 	sessionStorage.setItem("codeIsChanged", JSON.stringify(codeIsChanged));
 	setDirectoryTreeLinkBackground();
 }
-
+var editor;
 function setupCodeMirror() {
 	var mode;
 	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
@@ -44,7 +44,7 @@ function setupCodeMirror() {
 		console.log(instance.getValue())
 	}
 
-	var editor = CodeMirror(document.getElementById("editor"), {
+	editor = CodeMirror(document.getElementById("editor"), {
 	  value: codeText,
 	  lineNumbers: true,
 	  mode: mode,
@@ -67,10 +67,10 @@ function setupCodeMirror() {
 	hyperlinkOverlay(editor);
 
 	if (scanOn) {
-		var lineno = JSON.parse(sessionStorage.getItem("lineno"));
+		var lineno = JSON.parse(sessionStorage.getItem("lineno")) - 1;
 		editor.getDoc().addLineClass(lineno, "gutter", "selected-line-gutter");
 		editor.getDoc().addLineClass(lineno, "background", "selected-line-background");
-		editor.scrollIntoView(lineno - 1, 1);
+		editor.scrollIntoView(lineno, 1);
 	}
 }
 
@@ -146,17 +146,39 @@ function openScanPath() {
 }
 
 function nextScanPath() {
+
 	var linenoPath = JSON.parse(sessionStorage.getItem("linenoPath"));
 
-	if (linenoPath) {
+	if (linenoPath.length) {
+		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+
 		var nextLineno = linenoPath.shift();
 		
 		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
 		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
 		
-		editor.scrollIntoView(nextLineno - 1, 1);
-		console.log(nextLineno);
+		var nextPage = window.location.origin + fileName + "." + nextLineno;
+		goToPage(nextPage)
 	}
+	else {
+		var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
+		var fileName = getNextFileName()
+		linenoPath = scanFunctions[pathToKey(fileName)]
+
+		var nextLineno = linenoPath.shift();
+		
+		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
+		
+		var nextPage = window.location.origin + fileName + "." + nextLineno;
+		goToPage(nextPage)
+	}
+}
+
+function getNextFileName() {
+	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
+	return scanPath[scanPath.indexOf(fileName) + 1]	
 }
 
 function pathToKey(filepath) {
