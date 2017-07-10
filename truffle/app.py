@@ -47,7 +47,8 @@ def _run_search():
 
 @app.route("/_flow_tree", methods=["GET"])
 def _get_function_tree():
-    return render_template("callgraph.html", forest=project_index.forest)
+    return render_template("callgraph.html", forest=project_index.forest,
+                           rootDir=global_constants.FILEPATH)
 
 def main():
     print app.root_path

@@ -39,12 +39,12 @@
 
     <script>
       var forest = {{ forest | tojson | safe }};
+      var rootDir = {{ rootDir | tojson | safe }};
     </script>
 	</head>
 
 	<body>
-
-		test
+    <div id="tree-container"></div>
 		<script type="text/javascript" src="{{ url_for('static', filename = 'js/forest.js') }}"></script>
 	</body>
 
