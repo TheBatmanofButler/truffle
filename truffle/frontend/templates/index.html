@@ -28,7 +28,6 @@
     <script>
       sessionStorage.setItem("codeText", JSON.stringify({{ code_text | tojson | safe }}));
       sessionStorage.setItem("fileName", JSON.stringify({{ file_name | tojson | safe }}));
-      sessionStorage.setItem("lineno", JSON.stringify({{ lineno | tojson | safe }}));
       sessionStorage.setItem("directoryTree", JSON.stringify({{ directory_tree | tojson | safe }}));
 			var searchResults = {{ search_results | tojson | safe }};
     </script>

@@ -106,8 +106,9 @@ def get_scan_data(directory_tree, project_index):
             for function_name in file_data:
                 function_data = file_data[function_name]
                 lineno = function_data["lineno"]
-                scan_functions[key].append(lineno)
-            scan_functions[key].sort()
+                name = function_data["name"]
+                scan_functions[key].append((lineno, name))
+            scan_functions[key].sort(key=lambda x: x[0])
 
         if "children" in node:
             for i in node["children"]:

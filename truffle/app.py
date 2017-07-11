@@ -59,6 +59,12 @@ def _get_function_tree():
     return render_template("callgraph.html", forest=project_index.forest,
                            rootDir=log_dir)
 
+@app.route("/_get_docstring", methods=["GET"])
+def _get_docstring():
+    # filename = request.form["filename"]
+    # code_text = request.form["code_text"]
+    return jsonify("WOO WOO WOO WOO WOO")
+
 def main():
     print app.root_path
     app.run(debug=True)

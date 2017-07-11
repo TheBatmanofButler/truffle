@@ -78,16 +78,18 @@ function setupCodeMirror() {
 }
 
 function removeLineStyling() {
-	var lineno = JSON.parse(sessionStorage.getItem("lineno")) - 1;
-	editor.getDoc().removeLineClass(lineno, "gutter", "selected-line-gutter");
-	editor.getDoc().removeLineClass(lineno, "background", "selected-line-background");
+	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"))
+	var currentLineno = currentFunction[0] - 1;
+	editor.getDoc().removeLineClass(currentLineno, "gutter", "selected-line-gutter");
+	editor.getDoc().removeLineClass(currentLineno, "background", "selected-line-background");
 }
 
 function moveToNewLine() {
-	var lineno = JSON.parse(sessionStorage.getItem("lineno")) - 1;
-	editor.getDoc().addLineClass(lineno, "gutter", "selected-line-gutter");
-	editor.getDoc().addLineClass(lineno, "background", "selected-line-background");
-	lineScroll(lineno, editor);
+	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"))
+	var currentLineno = currentFunction[0] - 1;
+	editor.getDoc().addLineClass(currentLineno, "gutter", "selected-line-gutter");
+	editor.getDoc().addLineClass(currentLineno, "background", "selected-line-background");
+	lineScroll(currentLineno, editor);
 }
 
 function lineScroll(i) { 
@@ -156,19 +158,20 @@ function openScanPath() {
 		var nextLocation = fileName;
 	}
 
-	var linenoPath = scanFunctions[pathToKey(nextLocation)];
-	var reverseLinenoPath = [];
+	var functionPath = scanFunctions[pathToKey(nextLocation)];
+	var reversefunctionPath = [];
 
-	if (!linenoPath.length) {
-		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+	if (!functionPath.length) {
+		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
 		nextScanPath()
 		return;
 	}
-	var nextLineno = linenoPath.shift();
+	var nextFunction = functionPath.shift();
+	var nextLineno = nextFunction[0];
 	
-	sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
-	sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
-	sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
+	sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
+	sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
+	sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
 
 	var nextPage = window.location.origin + nextLocation + "." + nextLineno;
 
@@ -177,37 +180,43 @@ function openScanPath() {
 
 function nextScanPath() {
 
-	var linenoPath = JSON.parse(sessionStorage.getItem("linenoPath"));
-	var currentLineno = JSON.parse(sessionStorage.getItem("lineno"));
-	var reverseLinenoPath = JSON.parse(sessionStorage.getItem("reverseLinenoPath"));
+	var functionPath = JSON.parse(sessionStorage.getItem("functionPath"));
+	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"));
+	var reversefunctionPath = JSON.parse(sessionStorage.getItem("reversefunctionPath"));
 
-	if (linenoPath.length) {
-		reverseLinenoPath.push(currentLineno);
+	if (functionPath.length) {
+		reversefunctionPath.push(currentFunction);
 		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
 
-		var nextLineno = linenoPath.shift();
+		var nextFunction = functionPath.shift();
+		var nextLineno = nextFunction[0];
 		
 		removeLineStyling();
 		
-		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
-		sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
-		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
+		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
+		sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
+		sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
 
 		var nextPage = window.location.origin + fileName + "." + nextLineno;
 		window.history.pushState("", "", nextPage);
 		moveToNewLine();
 	}
 	else {
-		reverseLinenoPath = [];
+		reversefunctionPath = [];
 		var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
 		var fileName = getNextFileName()
-		linenoPath = scanFunctions[pathToKey(fileName)]
+		functionPath = scanFunctions[pathToKey(fileName)]
+		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
+		sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
 
-		var nextLineno = linenoPath.shift();
+		if (!functionPath) {
+			alert()
+		}
+
+		var nextFunction = functionPath.shift();
+		var nextLineno = nextFunction[0];
 		
-		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
-		sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
-		sessionStorage.setItem("lineno", JSON.stringify(nextLineno));
+		sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
 		
 		var nextPage = window.location.origin + fileName + "." + nextLineno;
 		goToPage(nextPage)
@@ -234,37 +243,39 @@ function getNextFileName() {
 
 function previousScanPath() {
 
-	var reverseLinenoPath = JSON.parse(sessionStorage.getItem("reverseLinenoPath"));
-	var currentLineno = JSON.parse(sessionStorage.getItem("lineno"));
-	var linenoPath = JSON.parse(sessionStorage.getItem("linenoPath"));
+	var reversefunctionPath = JSON.parse(sessionStorage.getItem("reversefunctionPath"));
+	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"));
+	var functionPath = JSON.parse(sessionStorage.getItem("functionPath"));
 
-	if (reverseLinenoPath.length) {
-		linenoPath.unshift(currentLineno);
+	if (reversefunctionPath.length) {
+		functionPath.unshift(currentFunction);
 		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
 
-		var previousLineno = reverseLinenoPath.pop();
+		var previousFunction = reversefunctionPath.pop();
+		var previousLineno = previousFunction[0];
 		
 		removeLineStyling();
 		
-		sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
-		sessionStorage.setItem("lineno", JSON.stringify(previousLineno));
-		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
+		sessionStorage.setItem("currentFunction", JSON.stringify(previousFunction));
+		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
 
 		var previousPage = window.location.origin + fileName + "." + previousLineno;
 		window.history.pushState("", "", previousPage);
 		moveToNewLine();
 	}
 	else {
-		linenoPath = [];
+		functionPath = [];
 		var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
 		var fileName = getPreviousFileName()
-		reverseLinenoPath = scanFunctions[pathToKey(fileName)]
+		reversefunctionPath = scanFunctions[pathToKey(fileName)]
 
-		var previousLineno = reverseLinenoPath.pop();
+		var previousFunction = reversefunctionPath.pop();
+		var previousLineno = previousFunction[0];
 		
-		sessionStorage.setItem("reverseLinenoPath", JSON.stringify(reverseLinenoPath));
-		sessionStorage.setItem("lineno", JSON.stringify(previousLineno));
-		sessionStorage.setItem("linenoPath", JSON.stringify(linenoPath));
+		sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
+		sessionStorage.setItem("currentFunction", JSON.stringify(previousFunction));
+		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
 		
 		var previousPage = window.location.origin + fileName + "." + previousLineno;
 		goToPage(previousPage)
@@ -305,12 +316,50 @@ function runScan() {
 function endScan() {
 	$(".one-line").hide();
 	$(".bottom-box").animate({height: "0"}, function () {
+		alert("Scan ended.")
 		sessionStorage.setItem("scanOn", JSON.stringify(false));
 		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
 		var nextPage = window.location.origin + fileName;
 		goToPage(nextPage);
 	});
 }
+
+function editDocstring() {
+
+	var docstring = getDocstring();
+	if (docstring) {
+		console.log(docstring);		
+	}
+
+	return codeText;
+}
+
+function getDocstring() {
+	$.getJSON('/_get_docstring', function(data) {
+		console.log(data);
+	});
+	// /_get_docstring
+	// var codeText = JSON.parse(sessionStorage.getItem("codeText"));
+	// codeTextArray = codeText.split("\n");
+	// var lineno = JSON.parse(sessionStorage.getItem("currentFunction"));
+
+	// var docstringLines = "";
+	// if isDocstring(codeLine) {
+		
+	// }
+	// else {
+	// 	return "";
+	// }
+}
+
+function isDocstring(codeLine) {
+	if (codeLine.indexOf("\'\'\'") !== -1 || codeLine.indexOf("\"\"\"") !== -1) {
+		return true;
+	}
+
+	return false;
+}
+
 
 function runSearch(query) {
 	window.open(window.location.origin + '/_run_search?query=' + query);
