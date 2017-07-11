@@ -312,7 +312,11 @@ button {
 			padding: 12px 20px 12px 40px;
 		}	
 
-		.search-result {
+		.search-result-link {
+			color: white
+		}
+
+		.search-result-highlight {
 			height: 10%;
 			font-family: Consolas, monaco, monospace;
 		}
