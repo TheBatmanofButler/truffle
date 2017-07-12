@@ -24,6 +24,7 @@ $( document ).ready(function() {
 	});
 
 	$(".scan-option").click( function (e) {
+		var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
 		if (!scanOn) {
 			$(".one-line").show();
 			$(".bottom-box").animate({height: "50%"}, function () {

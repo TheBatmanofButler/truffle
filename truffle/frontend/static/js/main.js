@@ -225,6 +225,7 @@ function endScan() {
 
 	window.history.pushState("", "", url);
 	sessionStorage.setItem("scanOn", JSON.stringify(false));
+	sessionStorage.setItem("currentFunction", JSON.stringify(null));
 }
 
 function editDocstring() {
