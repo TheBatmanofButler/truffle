@@ -18,7 +18,6 @@ function hoverWidgetOnOverlay(cm, overlayClass, widget) {
 			//widget.style.left=(e.pageX-5)+'px';  
 			//widget.style.top=(cm.charCoords(cm.coordsChar({ left: e.pageX, top:e.pageY })).bottom-1)+'px';
 
-			console.log(e)
 			widget.dataset.token=e.target.innerText;
 			if (typeof widget.onShown==='function') widget.onShown();
 
@@ -71,8 +70,6 @@ function hyperlinkOverlay(cm) {
 				stream.next();
 			}
 
-			console.log(word)
-
 			if (isHyperlinked(word)) return "index-link"; // CSS class: cm-url
 		},
 		blankLine: function(state) {
@@ -90,9 +87,12 @@ function hyperlinkOverlay(cm) {
 		//alert(link)
 		//window.open(window.location.origin + link); 
 		var link = callsmap[s]
-		alert(link)
 		var source = fileIndex['calls'][link]['source']
-		alert(source)
+		source = source.split('.') //Chomp the function name for now
+		source.pop()
+		source = source.join('.')
+		source = source.replace(/\./g, '/')
+		window.open(window.location.origin + source + '.py');
 		return true;
 	};
  	hoverWidgetOnOverlay(cm, 'index-link', widget);
