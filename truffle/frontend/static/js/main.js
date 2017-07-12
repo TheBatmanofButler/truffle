@@ -5,15 +5,15 @@ function codeChange(editor, codeIsChanged) {
 
 function getFileNameFromURL() {
 	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
+	var parts = window.location.pathname.split(".");
 
-	if (scanOn) {
-		var parts = window.location.pathname.split(".");
+	if (isNaN(parts[parts.length - 1])) {
+		return window.location.pathname;
+	}
+	else {
 		var noExt = parts.slice(0, -2).join('/');
 		var fileName = noExt + "." + parts[parts.length - 2];
 		return fileName;
-	}
-	else {
-		return window.location.pathname;
 	}
 }
 
@@ -82,15 +82,17 @@ function setupCodeMirror() {
 }
 
 function removeCurrentLineStyling() {
-	var currentLineno = parseInt(getLinenoFromURL()) - 1;
-	editor.getDoc().removeLineClass(currentLineno, "gutter", "selected-line-gutter");
-	editor.getDoc().removeLineClass(currentLineno, "background", "selected-line-background");
+	var lineno = getLinenoFromURL()
+	if (!isNaN(lineno)) {
+		var currentLineno = parseInt(lineno) - 1;
+		editor.getDoc().removeLineClass(currentLineno, "gutter", "selected-line-gutter");
+		editor.getDoc().removeLineClass(currentLineno, "background", "selected-line-background");
+	}
 }
 
 function moveToLine(lineno) {
 	removeCurrentLineStyling();
 	var newLineno = lineno - 1;
-	console.log(newLineno)
 	editor.getDoc().addLineClass(newLineno, "gutter", "selected-line-gutter");
 	editor.getDoc().addLineClass(newLineno, "background", "selected-line-background");
 	lineScroll(newLineno, editor);
@@ -121,85 +123,8 @@ function postSavedFile(filename, codeText) {
 	$.post('/_post_saved_file', {"filename": filename, "code_text": codeText}, function(response) {
 		sessionStorage.setItem("codeIsChanged", JSON.stringify(false));
 		setDirectoryTreeLinkBackground();
-		alert("File Saved")
+		console.log("File Saved")
 	});
-}
-
-function getNextFileName() {
-	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
-	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
-
-	if (!scanPath.length) {
-		alert("All files scanned.")
-		endScan();
-		return;
-	}
-
-	var scanIndex = scanPath.indexOf(fileName);
-	if (scanIndex == scanPath.length - 1) {
-		scanIndex = -1;
-	}
-
-	return scanPath[scanIndex + 1]	
-}
-
-function previousScanPath() {
-
-	var reversefunctionPath = JSON.parse(sessionStorage.getItem("reversefunctionPath"));
-	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"));
-	var functionPath = JSON.parse(sessionStorage.getItem("functionPath"));
-
-	if (reversefunctionPath.length) {
-		functionPath.unshift(currentFunction);
-		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
-
-		var previousFunction = reversefunctionPath.pop();
-		var previousLineno = previousFunction[0];
-		
-		removeLineStyling();
-		
-		sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
-		sessionStorage.setItem("currentFunction", JSON.stringify(previousFunction));
-		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
-
-		var previousPage = window.location.origin + fileName + "." + previousLineno;
-		window.history.pushState("", "", previousPage);
-		moveToLine();
-	}
-	else {
-		functionPath = [];
-		var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
-		var fileName = getPreviousFileName()
-		reversefunctionPath = scanFunctions[pathToKey(fileName)]
-
-		var previousFunction = reversefunctionPath.pop();
-		var previousLineno = previousFunction[0];
-		
-		sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
-		sessionStorage.setItem("currentFunction", JSON.stringify(previousFunction));
-		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
-		
-		var previousPage = window.location.origin + fileName + "." + previousLineno;
-		goToPage(previousPage)
-	}
-}
-
-function getPreviousFileName() {
-	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
-	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
-
-	if (!scanPath.length) {
-		alert("All files scanned.")
-		endScan();
-		return;
-	}
-
-	var scanIndex = scanPath.indexOf(fileName);
-	if (scanIndex == 0) {
-		scanIndex = scanPath.length;
-	}
-
-	return scanPath[scanIndex - 1]	
 }
 
 function pathToDomId(filepath) {
@@ -235,8 +160,8 @@ function getCodeText(callback) {
 }
 
 function startScan() {
-	sessionStorage.setItem("scanOn", JSON.stringify(true));
 	setScanPath( function(scanPath) {
+		sessionStorage.setItem("scanOn", JSON.stringify(true));
 		var scanIndex = sessionStorage.getItem("scanIndex");
 		if (!scanIndex) {
 			scanIndex = 0;
@@ -256,84 +181,50 @@ function goToPage() {
 				editor.setOption("readOnly", true);
 				editor.setOption("cursorBlinkRate", -1);
 
-				if (!$(".one-line").is(":visible")) {
-					console.log(123123)
-				}
-
 				moveToLine(lineno);
 				window.history.pushState("", "", url);
 			}
 			else {
-				console.log(getFileNameFromURL(), nextFile)
-				alert()
-				window.open(url, "_self");		
+				alert("Going to next page.")
+				$(".one-line").hide();
+				$(".bottom-box").animate({height: "0"}, function () {
+					window.open(url, "_self");
+				});
 			}
 		})
 	})
 }
 
-function nextScanPath() {
+function nextInScan(reverse) {
 
 	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
 	var scanIndex = JSON.parse(sessionStorage.getItem("scanIndex"));
 
 	// TO-DO: create cycle
-	scanIndex++;
+	if (reverse) {
+		scanIndex--;		
+	}
+	else {
+		scanIndex++;
+	}
+
 	sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex));
 
 	var currentFunction = scanPath[scanIndex];
 	sessionStorage.setItem("currentFunction", JSON.stringify(currentFunction));
 
 	goToPage();
-
-	// var functionPath = JSON.parse(sessionStorage.getItem("functionPath"));
-	// var reversefunctionPath = JSON.parse(sessionStorage.getItem("reversefunctionPath"));
-
-	// if (functionPath.length) {
-	// 	reversefunctionPath.push(currentFunction);
-	// 	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
-
-	// 	var nextFunction = functionPath.shift();
-	// 	var nextLineno = nextFunction[0];
-
-	// 	removeLineStyling();
-		
-	// 	sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
-	// 	sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
-	// 	sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
-
-	// 	var nextPage = window.location.origin + fileName + "." + nextLineno;
-	// 	window.history.pushState("", "", nextPage);
-	// 	moveToLine();
-	// }
-	// else {
-	// 	reversefunctionPath = [];
-	// 	var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
-	// 	var fileName = getNextFileName()
-	// 	functionPath = scanFunctions[pathToKey(fileName)]
-	// 	sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
-	// 	sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
-
-	// 	if (!functionPath) {
-	// 		alert()
-	// 	}
-
-	// 	var nextFunction = functionPath.shift();
-	// 	var nextLineno = nextFunction[0];
-		
-	// 	sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
-		
-	// 	var nextPage = window.location.origin + fileName + "." + nextLineno;
-	// 	goToPage(nextPage)
-	// }
 }
 
 function endScan() {
-	alert("Scan ended.")
+	console.log("Scan ended.")
+	
+	removeCurrentLineStyling();
+	var fileName = getFileNameFromURL();
+	var url = window.location.origin + fileName;	
+
+	window.history.pushState("", "", url);
 	sessionStorage.setItem("scanOn", JSON.stringify(false));
-	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
-	var nextPage = window.location.origin + fileName;
-	goToPage(nextPage);
 }
 
 function editDocstring() {

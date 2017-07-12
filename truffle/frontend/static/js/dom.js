@@ -28,7 +28,7 @@ $( document ).ready(function() {
 			$(".one-line").show();
 			$(".bottom-box").animate({height: "50%"}, function () {
 				startScan();
-			})
+			});
 		}
 		else {
 			$(".one-line").hide();
@@ -39,11 +39,11 @@ $( document ).ready(function() {
 	});
 
 	$(".next-button").click( function () {
-		nextScanPath();
+		nextInScan(false);
 	});
 
 	$(".previous-button").click( function () {
-		previousScanPath();
+		nextInScan(true);
 	});
 
 	$(".flow-option").click(function(e) {
@@ -84,6 +84,10 @@ $( document ).ready(function() {
 	if (scanOn) {
 		$(".one-line").show();
 		$(".bottom-box").animate({height: "50%"});
+	}
+	else {
+		$(".one-line").hide();
+		$(".bottom-box").animate({height: "0"});
 	}
 
 });
