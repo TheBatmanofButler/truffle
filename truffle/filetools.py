@@ -91,6 +91,7 @@ def get_scan_path(directory_tree, project_index):
     visited = set()
     stack = [node]
     scan_path = []
+    tree_path = []
 
     while len(stack) > 0:
         node = stack.pop()
@@ -98,6 +99,10 @@ def get_scan_path(directory_tree, project_index):
 
         if node_name in visited:
             continue
+
+        if not os.path.isdir(node_name):
+            tree_path.append(node_name)
+            print node_name
 
         visited.add(node_name)
 
@@ -117,4 +122,4 @@ def get_scan_path(directory_tree, project_index):
                 if i["name"] not in visited:
                     stack.append(i)
 
-    return scan_path[::-1]
+    return scan_path[::-1], tree_path[::-1]

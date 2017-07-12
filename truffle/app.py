@@ -33,8 +33,8 @@ def index(file_name="", lineno=None):
 
 @app.route("/_get_scan_path", methods=["GET"])
 def _get_scan_path():
-    scan_path = get_scan_path(directory_tree, project_index.project_index)
-    return jsonify(scan_path)
+    data = get_scan_path(directory_tree, project_index.project_index)
+    return jsonify(data)
 
 @app.route("/_get_code_text", methods=["GET"])
 def _get_code_text():

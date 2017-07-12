@@ -46,7 +46,7 @@ function setupCodeMirror() {
 	}
 
 	getCodeText( function(codeText) {
-		
+
 		// global var
 		editor = CodeMirror(document.getElementById("editor"), {
 		  value: codeText,
@@ -116,9 +116,10 @@ function getScanPathUrl(url) {
 }
 
 function setScanPath(callback) {
-	$.getJSON('/_get_scan_path', function(scanPath) {
-		sessionStorage.setItem("scanPath", JSON.stringify(scanPath));
-		callback(scanPath);
+	$.getJSON('/_get_scan_path', function(data) {
+		sessionStorage.setItem("scanPath", JSON.stringify(data[0]));
+		sessionStorage.setItem("treePath", JSON.stringify(data[1]));
+		callback(data);
 	});
 }
 
@@ -175,23 +176,41 @@ function getCodeText(callback) {
 }
 
 function startScan() {
-	setScanPath( function(scanPath) {
+	setScanPath( function(data) {
 		sessionStorage.setItem("scanOn", JSON.stringify(true));
-		
-		var fileName = getFileNameFromURL();
-		var key = pathToKey(fileName);
 
-		for (var i in scanPath) {
-			var functionName = scanPath[i];
-			if (functionName.indexOf(key) != -1) {
-				scanIndex = i;
-				break;
-			}
-		}
+		var scanPath = data[0];
+		var treePath = data[1];
+		var scanIndex = getScanIndex(scanPath, treePath);
+
 		sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex));
 		sessionStorage.setItem("currentFunction", JSON.stringify(scanPath[scanIndex]));
 		goToPage();
 	});
+}
+
+function getScanIndex(scanPath, treePath) {
+	var treeIndex = treePath.indexOf(getFileNameFromURL());
+	var treePath = JSON.parse(sessionStorage.getItem("treePath"));
+
+	var j = treeIndex;
+
+	do {
+		var fileName = treePath[j];
+		var key = pathToKey(fileName);
+		for (var i in scanPath) {
+			var functionName = scanPath[i];
+			if (functionName.indexOf(key) != -1) {
+				return i;
+			}
+		}
+		j++;
+		if (j == treePath.length) {
+			j = 0;
+		}
+	}
+	while (j != treeIndex)
+
 }
 
 function goToPage() {
