@@ -1,34 +1,36 @@
-function setDirectoryTreeLinkBackground() {
-	var selectedLink = JSON.parse(sessionStorage.getItem("selectedLink"));
-	if (selectedLink) {
-		$("#" + selectedLink).css("font-weight", "bold");
-
-		var codeIsChanged = JSON.parse(sessionStorage.getItem("codeIsChanged"));
-		var selectedFilename = sessionStorage.getItem("selectedFilename");
-		if (codeIsChanged) {
-			$("#" + selectedLink).text( function() {
-				return selectedFilename + "*";
-			});
-			$("#" + selectedLink).css("font-style", "italic");
-		}
-		else {
-			$("#" + selectedLink).text(selectedFilename);
-			$("#" + selectedLink).css("font-style", "normal");
-		}
-	}
-}
-
 function codeChange(editor, codeIsChanged) {
 	sessionStorage.setItem("codeIsChanged", JSON.stringify(codeIsChanged));
 	setDirectoryTreeLinkBackground();
 }
 
-function setupCodeMirror() {
-	var mode;
+function getFileNameFromURL() {
 	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
-	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
-	var codeText = JSON.parse(sessionStorage.getItem("codeText"));
 
+	if (scanOn) {
+		var parts = window.location.pathname.split(".");
+		var noExt = parts.slice(0, -2).join('/');
+		var fileName = noExt + "." + parts[parts.length - 2];
+		return fileName;
+	}
+	else {
+		return window.location.pathname;
+	}
+}
+
+function getFileNameFromServer(callback) {
+	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"));
+
+	$.getJSON('/_get_file_name', {
+		current_function: currentFunction
+	}, function(fileName) {
+		callback(fileName);
+	});
+}
+
+function setupCodeMirror() {
+
+	var fileName = getFileNameFromURL();
+	var mode;
 	if (fileName.includes(".py")) {
 		mode = "python";
 	}
@@ -41,7 +43,6 @@ function setupCodeMirror() {
 
 	CodeMirror.commands.save = function(instance) {
 		postSavedFile(fileName, instance.getValue());
-		console.log(instance.getValue())
 	}
 
 	// global var
@@ -68,28 +69,31 @@ function setupCodeMirror() {
 	});
 
 	// hyperlinkOverlay(editor);
+	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
 
 	if (scanOn) {
 		editor.setOption("readOnly", true);
 		editor.setOption("cursorBlinkRate", -1);
 
-		moveToNewLine();
+		var lineno = getLinenoFromURL();
+		moveToLine(lineno);
 	}
+
 }
 
-function removeLineStyling() {
-	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"))
-	var currentLineno = currentFunction[0] - 1;
+function removeCurrentLineStyling() {
+	var currentLineno = parseInt(getLinenoFromURL()) - 1;
 	editor.getDoc().removeLineClass(currentLineno, "gutter", "selected-line-gutter");
 	editor.getDoc().removeLineClass(currentLineno, "background", "selected-line-background");
 }
 
-function moveToNewLine() {
-	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"))
-	var currentLineno = currentFunction[0] - 1;
-	editor.getDoc().addLineClass(currentLineno, "gutter", "selected-line-gutter");
-	editor.getDoc().addLineClass(currentLineno, "background", "selected-line-background");
-	lineScroll(currentLineno, editor);
+function moveToLine(lineno) {
+	removeCurrentLineStyling();
+	var newLineno = lineno - 1;
+	console.log(newLineno)
+	editor.getDoc().addLineClass(newLineno, "gutter", "selected-line-gutter");
+	editor.getDoc().addLineClass(newLineno, "background", "selected-line-background");
+	lineScroll(newLineno, editor);
 }
 
 function lineScroll(i) { 
@@ -97,28 +101,6 @@ function lineScroll(i) {
 	var middleHeight = editor.getScrollerElement().offsetHeight / 2; 
 	editor.scrollTo(null, t - middleHeight - 5); 
 } 
-
-function setupFilePanel() {
-	$(".file-panel li").click(function (e) {
-		e.stopPropagation();
-		$(this).children().not("i,a, .directory-name").animate({
-			height: "toggle"
-		})
-		$(this).children("i").toggleClass("right");
-
-		if ($(this).attr("id")) {
-			var selectedLink = $(this).attr("id")
-			sessionStorage.setItem("selectedLink", JSON.stringify(selectedLink));
-			console.log($.trim($("#" + selectedLink).text()))
-			sessionStorage.setItem("selectedFilename", $.trim($("#" + selectedLink).text()));
-		}
-
-	});
-
-	$(".files-option").click( function () {
-		$(".file-panel").animate({width: "toggle"});
-	});
-}
 
 function getScanPathUrl(url) {
 	var filenameEndIndex = url.indexOf(".py") + 3,
@@ -128,12 +110,10 @@ function getScanPathUrl(url) {
 	return scanPathUrl;
 }
 
-function getScanData() {
-	$.getJSON('/_get_scan_data', function(data) {
-		console.log(data);
-		sessionStorage.setItem("scanFunctions", JSON.stringify(data.scanFunctions));
-		sessionStorage.setItem("scanPath", JSON.stringify(data.scanPath));
-		openScanPath();
+function setScanPath(callback) {
+	$.getJSON('/_get_scan_path', function(scanPath) {
+		sessionStorage.setItem("scanPath", JSON.stringify(scanPath));
+		callback(scanPath);
 	});
 }
 
@@ -143,84 +123,6 @@ function postSavedFile(filename, codeText) {
 		setDirectoryTreeLinkBackground();
 		alert("File Saved")
 	});
-}
-
-function openScanPath() {
-
-	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
-	var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
-	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
-
-	if (!fileName) {
-		var nextLocation = scanPath[0];
-	}
-	else {
-		var nextLocation = fileName;
-	}
-
-	var functionPath = scanFunctions[pathToKey(nextLocation)];
-	var reversefunctionPath = [];
-
-	if (!functionPath.length) {
-		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
-		nextScanPath()
-		return;
-	}
-	var nextFunction = functionPath.shift();
-	var nextLineno = nextFunction[0];
-	
-	sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
-	sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
-	sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
-
-	var nextPage = window.location.origin + nextLocation + "." + nextLineno;
-
-	goToPage(nextPage)
-}
-
-function nextScanPath() {
-
-	var functionPath = JSON.parse(sessionStorage.getItem("functionPath"));
-	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"));
-	var reversefunctionPath = JSON.parse(sessionStorage.getItem("reversefunctionPath"));
-
-	if (functionPath.length) {
-		reversefunctionPath.push(currentFunction);
-		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
-
-		var nextFunction = functionPath.shift();
-		var nextLineno = nextFunction[0];
-		
-		removeLineStyling();
-		
-		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
-		sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
-		sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
-
-		var nextPage = window.location.origin + fileName + "." + nextLineno;
-		window.history.pushState("", "", nextPage);
-		moveToNewLine();
-	}
-	else {
-		reversefunctionPath = [];
-		var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
-		var fileName = getNextFileName()
-		functionPath = scanFunctions[pathToKey(fileName)]
-		sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
-		sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
-
-		if (!functionPath) {
-			alert()
-		}
-
-		var nextFunction = functionPath.shift();
-		var nextLineno = nextFunction[0];
-		
-		sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
-		
-		var nextPage = window.location.origin + fileName + "." + nextLineno;
-		goToPage(nextPage)
-	}
 }
 
 function getNextFileName() {
@@ -262,7 +164,7 @@ function previousScanPath() {
 
 		var previousPage = window.location.origin + fileName + "." + previousLineno;
 		window.history.pushState("", "", previousPage);
-		moveToNewLine();
+		moveToLine();
 	}
 	else {
 		functionPath = [];
@@ -300,28 +202,138 @@ function getPreviousFileName() {
 	return scanPath[scanIndex - 1]	
 }
 
-function pathToKey(filepath) {
-	return filepath.split("/").join(".").slice(0, -3)
+function pathToDomId(filepath) {
+	return "FILE" + filepath.split("/").join("-").split(".").join("-")
 }
 
-function goToPage(url) {
-	window.open(url, "_self");
+function getShortNameFromFileName(fileName) {
+	var parts = fileName.split("/");
+	return parts[parts.length - 1];
 }
 
-function runScan() {
+function getLinenoFromURL() {
+	return window.location.pathname.split(".").pop();
+}
+
+function getLinenoFromServer(callback) {
+	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"));
+
+	$.getJSON('/_get_lineno', {
+		current_function: currentFunction
+	}, function(lineno) {
+		callback(lineno);
+	});
+}
+
+function getCodeText(callback) {
+	var fileName = getFileNameFromURL();
+	$.getJSON('/_get_code_text', {
+		file_name: fileName
+	}, function(codeText) {
+		callback(codeText);
+	});
+}
+
+function startScan() {
 	sessionStorage.setItem("scanOn", JSON.stringify(true));
-	getScanData();
+	setScanPath( function(scanPath) {
+		var scanIndex = sessionStorage.getItem("scanIndex");
+		if (!scanIndex) {
+			scanIndex = 0;
+			sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex));
+		}
+		sessionStorage.setItem("currentFunction", JSON.stringify(scanPath[scanIndex]));
+		goToPage();
+	});
+}
+
+function goToPage() {
+	getFileNameFromServer( function(nextFile) {
+		getLinenoFromServer( function(lineno) {
+			var url = window.location.origin + nextFile + "." + lineno;
+
+			if (getFileNameFromURL() == nextFile) {
+				editor.setOption("readOnly", true);
+				editor.setOption("cursorBlinkRate", -1);
+
+				if (!$(".one-line").is(":visible")) {
+					console.log(123123)
+				}
+
+				moveToLine(lineno);
+				window.history.pushState("", "", url);
+			}
+			else {
+				console.log(getFileNameFromURL(), nextFile)
+				alert()
+				window.open(url, "_self");		
+			}
+		})
+	})
+}
+
+function nextScanPath() {
+
+	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
+	var scanIndex = JSON.parse(sessionStorage.getItem("scanIndex"));
+
+	// TO-DO: create cycle
+	scanIndex++;
+	sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex));
+
+	var currentFunction = scanPath[scanIndex];
+	sessionStorage.setItem("currentFunction", JSON.stringify(currentFunction));
+
+	goToPage();
+
+	// var functionPath = JSON.parse(sessionStorage.getItem("functionPath"));
+	// var reversefunctionPath = JSON.parse(sessionStorage.getItem("reversefunctionPath"));
+
+	// if (functionPath.length) {
+	// 	reversefunctionPath.push(currentFunction);
+	// 	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+
+	// 	var nextFunction = functionPath.shift();
+	// 	var nextLineno = nextFunction[0];
+
+	// 	removeLineStyling();
+		
+	// 	sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
+	// 	sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
+	// 	sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
+
+	// 	var nextPage = window.location.origin + fileName + "." + nextLineno;
+	// 	window.history.pushState("", "", nextPage);
+	// 	moveToLine();
+	// }
+	// else {
+	// 	reversefunctionPath = [];
+	// 	var scanFunctions = JSON.parse(sessionStorage.getItem("scanFunctions"));
+	// 	var fileName = getNextFileName()
+	// 	functionPath = scanFunctions[pathToKey(fileName)]
+	// 	sessionStorage.setItem("functionPath", JSON.stringify(functionPath));
+	// 	sessionStorage.setItem("reversefunctionPath", JSON.stringify(reversefunctionPath));
+
+	// 	if (!functionPath) {
+	// 		alert()
+	// 	}
+
+	// 	var nextFunction = functionPath.shift();
+	// 	var nextLineno = nextFunction[0];
+		
+	// 	sessionStorage.setItem("currentFunction", JSON.stringify(nextFunction));
+		
+	// 	var nextPage = window.location.origin + fileName + "." + nextLineno;
+	// 	goToPage(nextPage)
+	// }
 }
 
 function endScan() {
-	$(".one-line").hide();
-	$(".bottom-box").animate({height: "0"}, function () {
-		alert("Scan ended.")
-		sessionStorage.setItem("scanOn", JSON.stringify(false));
-		var fileName = JSON.parse(sessionStorage.getItem("fileName"));
-		var nextPage = window.location.origin + fileName;
-		goToPage(nextPage);
-	});
+	alert("Scan ended.")
+	sessionStorage.setItem("scanOn", JSON.stringify(false));
+	var fileName = JSON.parse(sessionStorage.getItem("fileName"));
+	var nextPage = window.location.origin + fileName;
+	goToPage(nextPage);
 }
 
 function editDocstring() {

@@ -22,15 +22,8 @@
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.caret.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/jquery.tag-editor.min.js') }}"></script>
 
-    <link href="https://fonts.googleapis.com/css?family=Jaldi" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet">
-
-    <script>
-      sessionStorage.setItem("codeText", JSON.stringify({{ code_text | tojson | safe }}));
-      sessionStorage.setItem("fileName", JSON.stringify({{ file_name | tojson | safe }}));
-      sessionStorage.setItem("directoryTree", JSON.stringify({{ directory_tree | tojson | safe }}));
-			var searchResults = {{ search_results | tojson | safe }};
-    </script>
+    <!-- <link href="https://fonts.googleapis.com/css?family=Jaldi" rel="stylesheet"> -->
+    <!-- <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet"> -->
 
 	</head>
 
@@ -52,8 +45,8 @@
 
                   <!-- iterate through directory_tree -->
                   {%- for item in directory_tree.children recursive %}
-                      {% if item.count_id %}
-                        <li id="item{{ item.count_id }}">
+                      {% if item.dom_id %}
+                        <li id="{{ item.dom_id }}">
                       {% else %}
                         <li>
                       {% endif %}
@@ -151,6 +144,11 @@
     </div>
 
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/global.js') }}"></script>
+    <!-- state variables from server -->
+    <script>
+      codeText = {{ code_text | tojson | safe }};
+      searchResults = {{ search_results | tojson | safe }};
+    </script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/hyperlink.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/comments.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename = 'js/main.js') }}"></script>

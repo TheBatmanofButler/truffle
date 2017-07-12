@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template, request
-from filetools import get_directory_tree, get_scan_data
+from filetools import get_directory_tree, get_scan_path
 from indextools import index_code
 import text_index
 
@@ -31,12 +31,35 @@ def index(file_name="", lineno=None):
                            file_name=file_name, lineno=lineno,
                            code_text=code_text, search_results=None)
 
-@app.route("/_get_scan_data", methods=["GET"])
-def _get_scan_data():
-    scan_functions, scan_path = get_scan_data(directory_tree, project_index.project_index)
-    return_dict = {"scanFunctions": scan_functions, "scanPath": scan_path}
+@app.route("/_get_scan_path", methods=["GET"])
+def _get_scan_path():
+    scan_path = get_scan_path(directory_tree, project_index.project_index)
+    return jsonify(scan_path)
 
-    return jsonify(return_dict)
+@app.route("/_get_code_text", methods=["GET"])
+def _get_code_text():
+    file_name = request.args.get('file_name', 0, type=str)
+
+    with open(file_name, 'r') as f:
+        code_text = f.read()
+
+    return jsonify(code_text)
+
+@app.route("/_get_lineno", methods=["GET"])
+def _get_lineno():
+    current_function = request.args.get('current_function', 0, type=str)
+    return jsonify(int(project_index.functions[current_function]["lineno"]))
+
+@app.route("/_get_file_name", methods=["GET"])
+def _get_file_name():
+    current_function = request.args.get('current_function', 0, type=str)
+    fname = project_index.functions[current_function]["fname"]
+    file_name = _convert_file_name_to_slashes(fname) + ".py"
+    return jsonify(file_name);
+
+def _convert_file_name_to_slashes(file_name_unformatted):
+    file_name = file_name_unformatted.replace(".", "/")
+    return file_name
 
 @app.route("/_post_saved_file", methods=["POST"])
 def _post_saved_file():
