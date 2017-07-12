@@ -146,7 +146,6 @@
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/global.js') }}"></script>
     <!-- state variables from server -->
     <script>
-      codeText = {{ code_text | tojson | safe }};
       searchResults = {{ search_results | tojson | safe }};
     </script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/hyperlink.js') }}"></script>

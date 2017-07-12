@@ -1,6 +1,6 @@
 function codeChange(editor, codeIsChanged) {
 	sessionStorage.setItem("codeIsChanged", JSON.stringify(codeIsChanged));
-	setDirectoryTreeLinkBackground();
+	setSelectedLink();
 }
 
 function getFileNameFromURL() {
@@ -45,39 +45,42 @@ function setupCodeMirror() {
 		postSavedFile(fileName, instance.getValue());
 	}
 
-	// global var
-	editor = CodeMirror(document.getElementById("editor"), {
-	  value: codeText,
-	  lineNumbers: true,
-	  mode: mode,
-	  theme: "base16-dark",
-	  readOnly: false,
-	  cursorBlinkRate: 530
-	});
+	getCodeText( function(codeText) {
+		
+		// global var
+		editor = CodeMirror(document.getElementById("editor"), {
+		  value: codeText,
+		  lineNumbers: true,
+		  mode: mode,
+		  theme: "base16-dark",
+		  readOnly: false,
+		  cursorBlinkRate: 530
+		});
 
-	editor.on("change", function() {
-		if (editor.getDoc().historySize().undo) {
-			codeChange(editor, true);
+		editor.on("change", function() {
+			if (editor.getDoc().historySize().undo) {
+				codeChange(editor, true);
+			}
+			else {
+				codeChange(editor, false);
+			}
+		});
+
+		$(".save-option").click( function (e) {
+			editor.execCommand("save");
+		});
+
+		// hyperlinkOverlay(editor);
+		var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
+
+		if (scanOn) {
+			editor.setOption("readOnly", true);
+			editor.setOption("cursorBlinkRate", -1);
+
+			var lineno = getLinenoFromURL();
+			moveToLine(lineno);
 		}
-		else {
-			codeChange(editor, false);
-		}
-	});
-
-	$(".save-option").click( function (e) {
-		editor.execCommand("save");
-	});
-
-	// hyperlinkOverlay(editor);
-	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
-
-	if (scanOn) {
-		editor.setOption("readOnly", true);
-		editor.setOption("cursorBlinkRate", -1);
-
-		var lineno = getLinenoFromURL();
-		moveToLine(lineno);
-	}
+	})
 
 }
 
@@ -122,13 +125,25 @@ function setScanPath(callback) {
 function postSavedFile(filename, codeText) {
 	$.post('/_post_saved_file', {"filename": filename, "code_text": codeText}, function(response) {
 		sessionStorage.setItem("codeIsChanged", JSON.stringify(false));
-		setDirectoryTreeLinkBackground();
+		setSelectedLink();
 		console.log("File Saved")
 	});
 }
 
 function pathToDomId(filepath) {
 	return "FILE" + filepath.split("/").join("-").split(".").join("-")
+}
+
+function pathToKey(filepath) {
+	var parts = filepath.split(".");
+	parts = parts.slice(0, -1);
+	if (parts.length > 1) {
+		parts = parts.join(".");
+	}
+	else {
+		parts = parts[0];
+	}
+	return parts.split("/").join(".");
 }
 
 function getShortNameFromFileName(fileName) {
@@ -162,11 +177,18 @@ function getCodeText(callback) {
 function startScan() {
 	setScanPath( function(scanPath) {
 		sessionStorage.setItem("scanOn", JSON.stringify(true));
-		var scanIndex = sessionStorage.getItem("scanIndex");
-		if (!scanIndex) {
-			scanIndex = 0;
-			sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex));
+		
+		var fileName = getFileNameFromURL();
+		var key = pathToKey(fileName);
+
+		for (var i in scanPath) {
+			var functionName = scanPath[i];
+			if (functionName.indexOf(key) != -1) {
+				scanIndex = i;
+				break;
+			}
 		}
+		sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex));
 		sessionStorage.setItem("currentFunction", JSON.stringify(scanPath[scanIndex]));
 		goToPage();
 	});
@@ -221,11 +243,15 @@ function endScan() {
 	
 	removeCurrentLineStyling();
 	var fileName = getFileNameFromURL();
-	var url = window.location.origin + fileName;	
+	var url = window.location.origin + fileName;
+
+	editor.setOption("readOnly", false);
+	editor.setOption("cursorBlinkRate", 500);
 
 	window.history.pushState("", "", url);
-	sessionStorage.setItem("scanOn", JSON.stringify(false));
+	sessionStorage.setItem("scanIndex", JSON.stringify(null));
 	sessionStorage.setItem("currentFunction", JSON.stringify(null));
+	sessionStorage.setItem("scanOn", JSON.stringify(false));
 }
 
 function editDocstring() {
@@ -242,18 +268,6 @@ function getDocstring() {
 	$.getJSON('/_get_docstring', function(data) {
 		console.log(data);
 	});
-	// /_get_docstring
-	// var codeText = JSON.parse(sessionStorage.getItem("codeText"));
-	// codeTextArray = codeText.split("\n");
-	// var lineno = JSON.parse(sessionStorage.getItem("currentFunction"));
-
-	// var docstringLines = "";
-	// if isDocstring(codeLine) {
-		
-	// }
-	// else {
-	// 	return "";
-	// }
 }
 
 function isDocstring(codeLine) {

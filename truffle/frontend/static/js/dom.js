@@ -2,6 +2,7 @@ $( document ).ready(function() {
 
 	sessionStorage.setItem("codeIsChanged", JSON.stringify(false));
 	var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
+
 	if (searchResults)
 		loadSearchResults();
 	else
@@ -96,16 +97,24 @@ $( document ).ready(function() {
 function setupFilePanel() {
 	$(".file-panel li").click(function (e) {
 		e.stopPropagation();
-		$(this).children().not("i,a, .directory-name").animate({
-			height: "toggle"
-		})
-		$(this).children("i").toggleClass("right");
+		var $directoryElements = $(this).children().not("i,a, .directory-name");
+		var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
 
-		if ($(this).attr("id")) {
-			var selectedLink = $(this).attr("id")
-			sessionStorage.setItem("selectedLink", JSON.stringify(selectedLink));
-			console.log($.trim($("#" + selectedLink).text()))
-			sessionStorage.setItem("selectedFilename", $.trim($("#" + selectedLink).text()));
+		if ($directoryElements.length > 0) {
+			$(this).children().not("i,a, .directory-name").animate({
+				height: "toggle"
+			})
+			$(this).children("i").toggleClass("right");
+		}
+		else if (scanOn) {
+			e.preventDefault();
+			alert("Cannot change files in the middle of a scan.")
+		}
+		else if ($(this).attr("id")) {
+				var selectedLink = $(this).attr("id")
+				sessionStorage.setItem("selectedLink", JSON.stringify(selectedLink));
+				console.log($.trim($("#" + selectedLink).text()))
+				sessionStorage.setItem("selectedFilename", $.trim($("#" + selectedLink).text()));
 		}
 
 	});
