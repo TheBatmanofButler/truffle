@@ -67,7 +67,8 @@ function setupCodeMirror() {
 		editor.execCommand("save");
 	});
 
-	// hyperlinkOverlay(editor);
+	if (fileIndex)
+		processFileIndex()
 
 	if (scanOn) {
 		editor.setOption("readOnly", true);
@@ -266,4 +267,8 @@ function loadSearchResults() {
 
 function loadCallGraph() {
 	window.open(window.location.origin + '/_flow_tree')
+}
+
+function processFileIndex() {
+	hyperlinkOverlay(editor);
 }

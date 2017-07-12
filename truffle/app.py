@@ -27,9 +27,14 @@ def index(file_name="", lineno=None):
     else:
         code_text = ""
 
+    file_index, index_fname = project_index.get_file_index(file_name)
+
+    print file_index
+
     return render_template("index.html", directory_tree=directory_tree,
                            file_name=file_name, lineno=lineno,
-                           code_text=code_text, search_results=None)
+                           code_text=code_text, search_results=None,
+                           file_index=file_index, index_fname=index_fname)
 
 @app.route("/_get_scan_data", methods=["GET"])
 def _get_scan_data():
