@@ -8,28 +8,29 @@ function hoverWidgetOnOverlay(cm, overlayClass, widget) {
 	widget.dataset.token=null;
 
 	cm.getWrapperElement().addEventListener('mousemove', e => {
-		let onToken=e.target.classList.contains("cm-"+overlayClass), onWidget=(e.target===widget || widget.contains(e.target));
 
-		if (onToken && e.target.innerText!==widget.dataset.token) { // entered token, show widget
+		let onToken=e.target.classList.contains("cm-"+overlayClass),
+			onWidget=(e.target===widget || widget.contains(e.target));
+
+		if (onToken && e.target.innerText!==widget.dataset.token) {
 			var rect = e.target.getBoundingClientRect();
 			widget.style.left=rect.left+'px';
 			widget.style.top=rect.bottom+'px';
-			//let charCoords=cm.charCoords(cm.coordsChar({ left: e.pageX, top:e.pageY }));
-			//widget.style.left=(e.pageX-5)+'px';  
-			//widget.style.top=(cm.charCoords(cm.coordsChar({ left: e.pageX, top:e.pageY })).bottom-1)+'px';
-
 			widget.dataset.token=e.target.innerText;
+			widget.dataset.type='cm-' + overlayClass;
 			if (typeof widget.onShown==='function') widget.onShown();
 
-		} else if ((e.target===widget || widget.contains(e.target))) { // entered widget, call widget.onEntered
-			if (widget.dataset.entered==='true' && typeof widget.onEntered==='function')  widget.onEntered();
+		} else if ((e.target===widget || widget.contains(e.target))) {
+			if (widget.dataset.entered==='true' &&
+				typeof widget.onEntered==='function')  widget.onEntered();
 			widget.dataset.entered='true';
 
-		} else if (!onToken && widget.style.left!=='-1000px') { // we stepped outside
-			widget.style.top=widget.style.left='-1000px'; // hide it 
+		} else if (!onToken && widget.style.left!=='-1000px') {
+			widget.style.top=widget.style.left='-1000px';
 			delete widget.dataset.token;
 			widget.dataset.entered='false';
-			if (typeof widget.onHidden==='function') widget.onHidden();
+			if (typeof widget.onHidden==='function')
+				widget.onHidden();
 		}
 
 		return true;
@@ -52,6 +53,13 @@ function hyperlinkOverlay(cm) {
 		return false
 	}
 
+	function isFunctionDef(s) {
+		fullpath = indexFname + '.' + s;
+		if (fullpath in fileIndex['functions'])
+			return true;
+		return false;
+	}
+
 	cm.addOverlay({
 		token: function(stream) {
 			if (stream.sol())
@@ -70,7 +78,10 @@ function hyperlinkOverlay(cm) {
 				stream.next();
 			}
 
-			if (isHyperlinked(word)) return "index-link"; // CSS class: cm-url
+			if (isHyperlinked(word))
+				return 'index-link'; // CSS class: cm-url
+			if (isFunctionDef(word))
+				return 'function-def';
 		},
 		blankLine: function(state) {
 			currentLine++;
@@ -78,22 +89,39 @@ function hyperlinkOverlay(cm) {
 		{ opaque : true }  // opaque will remove any spelling overlay etc
 	);
 
-	let widget=document.createElement('button');
-	widget.innerHTML='&rarr;'
-	widget.onclick=function(e) { 
-		if (!widget.dataset.token) return;
-		let s=widget.dataset.token;
-		//let line = cm.getCursor()['line']
-		//alert(link)
-		//window.open(window.location.origin + link); 
-		var link = callsmap[s]
-		var source = fileIndex['calls'][link]['source']
-		source = source.split('.') //Chomp the function name for now
-		source.pop()
-		source = source.join('.')
-		source = source.replace(/\./g, '/')
-		window.open(window.location.origin + source + '.py');
-		return true;
+	let widget1=document.createElement('button');
+	widget1.innerHTML='&rarr;'
+	widget1.onclick=function(e) { 
+		if (!widget1.dataset.token) return;
+		if (!widget1.dataset.type) return;
+
+		let s=widget1.dataset.token;
+		if (widget1.dataset.type === 'cm-index-link') {
+			var link = callsmap[s]
+			var source = fileIndex['calls'][link]['source']
+			source = source.split('.') //Chomp the function name for now
+			source.pop()
+			source = source.join('.')
+			source = source.replace(/\./g, '/')
+			window.open(window.location.origin + source + '.py');
+			return true;
+		} 	
 	};
- 	hoverWidgetOnOverlay(cm, 'index-link', widget);
+ 	hoverWidgetOnOverlay(cm, 'index-link', widget1);
+
+	let widget2=document.createElement('button');
+	widget2.innerHTML='&rarr;'
+	widget2.onclick=function(e) { 
+		if (!widget2.dataset.token) return;
+		if (!widget2.dataset.type) return;
+
+		let s=widget2.dataset.token;
+		if (widget2.dataset.type === 'cm-function-def') {
+			fullpath = indexFname + '.' + s;
+			console.log(fileIndex['functions'][fullpath]['calling_functions']);
+		}
+	};
+
+	
+ 	hoverWidgetOnOverlay(cm, 'function-def', widget2);
 }
