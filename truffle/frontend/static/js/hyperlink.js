@@ -90,19 +90,19 @@ function hyperlinkOverlay(cm) {
 	);
 
 	let widget1=document.createElement('button');
-	widget1.innerHTML='&rarr;'
+	widget1.innerHTML='&rarr;';
 	widget1.onclick=function(e) { 
 		if (!widget1.dataset.token) return;
 		if (!widget1.dataset.type) return;
 
 		let s=widget1.dataset.token;
 		if (widget1.dataset.type === 'cm-index-link') {
-			var link = callsmap[s]
-			var source = fileIndex['calls'][link]['source']
-			source = source.split('.') //Chomp the function name for now
-			source.pop()
-			source = source.join('.')
-			source = source.replace(/\./g, '/')
+			var link = callsmap[s];
+			var source = fileIndex['calls'][link]['source'];
+			source = source.split('.'); //Chomp the function name for now
+			source.pop();
+			source = source.join('.');
+			source = source.replace(/\./g, '/');
 			window.open(window.location.origin + source + '.py');
 			return true;
 		} 	
@@ -110,15 +110,29 @@ function hyperlinkOverlay(cm) {
  	hoverWidgetOnOverlay(cm, 'index-link', widget1);
 
 	let widget2=document.createElement('button');
-	widget2.innerHTML='&rarr;'
+	widget2.innerHTML='*';
 	widget2.onclick=function(e) { 
 		if (!widget2.dataset.token) return;
 		if (!widget2.dataset.type) return;
 
+		$('.call-box').html('').show();
 		let s=widget2.dataset.token;
 		if (widget2.dataset.type === 'cm-function-def') {
 			fullpath = indexFname + '.' + s;
-			console.log(fileIndex['functions'][fullpath]['calling_functions']);
+			calls = fileIndex['functions'][fullpath]['calling_functions'];
+
+			for (i in calls) {
+				basecall = calls[i];
+				call = basecall.split('.');
+				call.pop();
+				call = call.join('.');
+				call = call.replace(/\./g, '/');
+				link = window.location.origin + call + '.py'
+				$('.call-box').append('<a class="calling-function" href='
+					+ link + '>' + basecall + '</a></br></br>');
+			}
+
+			$('.bottom-box').animate({height: '50%'});
 		}
 	};
 

@@ -28,6 +28,7 @@ def index(file_name="", lineno=None):
         code_text = ""
 
     file_index, index_fname = project_index.get_file_index(file_name)
+    file_index = file_index if file_index else ''
 
     print file_index
 
@@ -57,7 +58,8 @@ def _run_search():
     hits = text_index.search_text(project_index.text_searcher, query)
     return render_template("index.html", directory_tree=directory_tree,
                            file_name='', lineno='', code_text='',
-                           search_results=hits)
+                           search_results=hits, file_index='',
+                           index_fname='')
 
 @app.route("/_flow_tree", methods=["GET"])
 def _get_function_tree():
