@@ -415,3 +415,8 @@ img::-moz-selection {
 body {
   webkit-tap-highlight-color: #222222;
 }
+
+.starred-text {
+	text-align: center;
+	padding-top: 5%;
+}
