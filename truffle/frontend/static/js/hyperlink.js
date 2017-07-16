@@ -112,6 +112,7 @@ function hyperlinkOverlay(cm) {
 	let widget2=document.createElement('button');
 	widget2.innerHTML='*';
 	widget2.onclick=function(e) { 
+		event.stopPropagation();
 		if (!widget2.dataset.token) return;
 		if (!widget2.dataset.type) return;
 
@@ -133,6 +134,9 @@ function hyperlinkOverlay(cm) {
 			}
 
 			$('.bottom-box').animate({height: '50%'});
+			$('#editor').click(function() {
+				$('.bottom-box').animate({height: '0%'});
+			});
 		}
 	};
 
