@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template, request
-from filetools import get_directory_tree, get_scan_path
+from filetools import get_directory_tree, get_scan_path, _get_name
 from indextools import index_code
 import text_index
 
@@ -36,6 +36,25 @@ def _get_scan_path():
     data = get_scan_path(directory_tree, project_index.project_index)
     return jsonify(data)
 
+@app.route("/_get_functions_in_file", methods=["GET"])
+def _get_functions_in_file():
+    file_name = request.args.get('file_name', 0, type=str)
+    file_name = _get_name(file_name)
+    scan_path, tree_path = get_scan_path(directory_tree, project_index.project_index)
+    functions_in_file = []
+
+    for function_name in scan_path:
+        if function_name.find(file_name) != -1:
+            function_obj = {
+                        "functionName": function_name,
+                        "docstringLength": False,
+                        "lineno": int(project_index.functions[function_name]["lineno"])
+                    }
+
+            functions_in_file.append(function_obj)
+
+    return jsonify(functions_in_file)
+
 @app.route("/_get_code_text", methods=["GET"])
 def _get_code_text():
     file_name = request.args.get('file_name', 0, type=str)
@@ -47,8 +66,8 @@ def _get_code_text():
 
 @app.route("/_get_lineno", methods=["GET"])
 def _get_lineno():
-    current_function = request.args.get('current_function', 0, type=str)
-    return jsonify(int(project_index.functions[current_function]["lineno"]))
+    function_name = request.args.get('function_name', 0, type=str)
+    return jsonify(int(project_index.functions[function_name]["lineno"]))
 
 @app.route("/_get_file_name", methods=["GET"])
 def _get_file_name():
@@ -84,9 +103,9 @@ def _get_function_tree():
 
 @app.route("/_get_docstring", methods=["GET"])
 def _get_docstring():
-    # filename = request.form["filename"]
-    # code_text = request.form["code_text"]
-    return jsonify("WOO WOO WOO WOO WOO")
+    current_function = request.args.get('current_function', 0, type=str)
+    docstring = project_index.functions[current_function]["docstring"]
+    return jsonify(docstring)
 
 def main():
     print app.root_path

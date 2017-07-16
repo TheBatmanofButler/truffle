@@ -1,4 +1,5 @@
 class Pet(object):
+    """one line comment"""
     
     def __init__(self, name, species):
         """
@@ -40,6 +41,8 @@ class Pet(object):
         return "%s is a %s" % (self.name, self.species)
 
 class DogsAreTheBest(Pet):
+    """
+    weird docstring"""
     
     def __init__(self, name, chases_cats):
         Pet.__init__(self, name, "Dog")

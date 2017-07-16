@@ -70,7 +70,6 @@ function setupCodeMirror() {
 			editor.execCommand("save");
 		});
 
-		// hyperlinkOverlay(editor);
 		var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
 
 		if (scanOn) {
@@ -87,7 +86,7 @@ function setupCodeMirror() {
 function removeCurrentLineStyling() {
 	var lineno = getLinenoFromURL()
 	if (!isNaN(lineno)) {
-		var currentLineno = parseInt(lineno) - 1;
+		var currentLineno = lineno - 1;
 		editor.getDoc().removeLineClass(currentLineno, "gutter", "selected-line-gutter");
 		editor.getDoc().removeLineClass(currentLineno, "background", "selected-line-background");
 	}
@@ -95,10 +94,12 @@ function removeCurrentLineStyling() {
 
 function moveToLine(lineno) {
 	removeCurrentLineStyling();
-	var newLineno = lineno - 1;
-	editor.getDoc().addLineClass(newLineno, "gutter", "selected-line-gutter");
-	editor.getDoc().addLineClass(newLineno, "background", "selected-line-background");
-	lineScroll(newLineno, editor);
+	var cmLineno = lineno - 1;
+	editor.getDoc().addLineClass(cmLineno, "gutter", "selected-line-gutter");
+	editor.getDoc().addLineClass(cmLineno, "background", "selected-line-background");
+	lineScroll(cmLineno, editor);
+
+	setupBottomBox(lineno);
 }
 
 function lineScroll(i) { 
@@ -106,14 +107,6 @@ function lineScroll(i) {
 	var middleHeight = editor.getScrollerElement().offsetHeight / 2; 
 	editor.scrollTo(null, t - middleHeight - 5); 
 } 
-
-function getScanPathUrl(url) {
-	var filenameEndIndex = url.indexOf(".py") + 3,
-		filename = url.substring(0,filenameEndIndex),
-		scanPathUrl = filename + "." + lineno;
-
-	return scanPathUrl;
-}
 
 function setScanPath(callback) {
 	$.getJSON('/_get_scan_path', function(data) {
@@ -153,14 +146,12 @@ function getShortNameFromFileName(fileName) {
 }
 
 function getLinenoFromURL() {
-	return window.location.pathname.split(".").pop();
+	return parseInt(window.location.pathname.split(".").pop());
 }
 
-function getLinenoFromServer(callback) {
-	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"));
-
+function getLinenoFromServer(functionName, callback) {
 	$.getJSON('/_get_lineno', {
-		current_function: currentFunction
+		function_name: functionName
 	}, function(lineno) {
 		callback(lineno);
 	});
@@ -181,15 +172,55 @@ function startScan() {
 
 		var scanPath = data[0];
 		var treePath = data[1];
-		var scanIndex = getScanIndex(scanPath, treePath);
+		var scanIndex = getScanStartIndex(scanPath, treePath);
 
 		sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex));
+		sessionStorage.setItem("scanStartIndex", JSON.stringify(scanIndex));
 		sessionStorage.setItem("currentFunction", JSON.stringify(scanPath[scanIndex]));
-		goToPage();
+
+		getFileNameFromServer( function(nextFile) {
+			getDocstringInfo(nextFile, function() {
+				goToCommentable();
+			});
+		});
 	});
 }
 
-function getScanIndex(scanPath, treePath) {
+function getFunctionsInFileFromServer(fileName, callback) {
+	$.getJSON('/_get_functions_in_file', {
+		file_name: fileName
+	}, function(functionsInFile) {
+		callback(functionsInFile);
+	});
+}
+
+function getDocstringInfo(fileName, callback) {
+	getFunctionsInFileFromServer(fileName, function(functionsInFile) {
+		var codeTextArray =	updateLocalCodeText();
+		var docstringInfo = [];
+
+		for (var i in functionsInFile) {
+			var functionObj = functionsInFile[i];
+			var lineno = functionObj.lineno - 1;
+			var declStartLineno = getDeclLineno(codeTextArray, lineno);
+			var docstringStartLineno = declStartLineno + 1;
+			var docstring = codeTextArray.slice(docstringStartLineno, Infinity)
+										.join("\n")
+										.match(docstringFromStartRegex);
+			if (docstring) {
+				var docstringLength = docstring[0].split("\n").length;
+				functionsInFile[i].docstringLength = docstringLength;
+			}
+			else {
+				functionsInFile[i].docstringLength = false;
+			}
+		}
+		sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
+		callback();
+	})
+}
+
+function getScanStartIndex(scanPath, treePath) {
 	var treeIndex = treePath.indexOf(getFileNameFromURL());
 	var treePath = JSON.parse(sessionStorage.getItem("treePath"));
 
@@ -213,26 +244,37 @@ function getScanIndex(scanPath, treePath) {
 
 }
 
-function goToPage() {
+function getLinenoFromStorage() {
+	var functionName = JSON.parse(sessionStorage.getItem("currentFunction"));
+	var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
+
+	for (var i in functionsInFile) {
+		var functionObj = functionsInFile[i];
+		if (functionObj.functionName == functionName) {
+			return functionObj.lineno;
+		}
+	}
+}
+
+function goToCommentable() {
 	getFileNameFromServer( function(nextFile) {
-		getLinenoFromServer( function(lineno) {
-			var url = window.location.origin + nextFile + "." + lineno;
+		var lineno = getLinenoFromStorage();
+		var url = window.location.origin + nextFile + "." + lineno;
 
-			if (getFileNameFromURL() == nextFile) {
-				editor.setOption("readOnly", true);
-				editor.setOption("cursorBlinkRate", -1);
+		if (getFileNameFromURL() == nextFile) {
+			editor.setOption("readOnly", true);
+			editor.setOption("cursorBlinkRate", -1);
 
-				moveToLine(lineno);
-				window.history.pushState("", "", url);
-			}
-			else {
-				alert("Going to next page.")
-				$(".one-line").hide();
-				$(".bottom-box").animate({height: "0"}, function () {
-					window.open(url, "_self");
-				});
-			}
-		})
+			moveToLine(lineno);
+			window.history.pushState("", "", url);
+		}
+		else {
+			alert("Going to next page.")
+			$(".one-line").hide();
+			$(".bottom-box").animate({height: "0"}, function () {
+				window.open(url, "_self");
+			});
+		}
 	})
 }
 
@@ -240,6 +282,7 @@ function nextInScan(reverse) {
 
 	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
 	var scanIndex = JSON.parse(sessionStorage.getItem("scanIndex"));
+	var scanStartIndex = JSON.parse(sessionStorage.getItem("scanStartIndex"));
 
 	// TO-DO: create cycle
 	if (reverse) {
@@ -247,6 +290,11 @@ function nextInScan(reverse) {
 	}
 	else {
 		scanIndex++;
+
+		if (scanIndex == scanStartIndex) {
+			endScan();
+			return;
+		}
 	}
 
 	sessionStorage.setItem("scanIndex", JSON.stringify(scanIndex));
@@ -254,12 +302,17 @@ function nextInScan(reverse) {
 	var currentFunction = scanPath[scanIndex];
 	sessionStorage.setItem("currentFunction", JSON.stringify(currentFunction));
 
-	goToPage();
+	goToCommentable();
 }
 
 function endScan() {
 	console.log("Scan ended.")
 	
+	if ($(".one-line").is(":visible")) {
+		$(".one-line").hide();
+		$(".bottom-box").animate({height: "0"});
+	}
+
 	removeCurrentLineStyling();
 	var fileName = getFileNameFromURL();
 	var url = window.location.origin + fileName;
@@ -283,9 +336,13 @@ function editDocstring() {
 	return codeText;
 }
 
-function getDocstring() {
-	$.getJSON('/_get_docstring', function(data) {
-		console.log(data);
+function getDocstringFromServer(callback) {
+	var currentFunction = JSON.parse(sessionStorage.getItem("currentFunction"));
+
+	$.getJSON('/_get_docstring', {
+		current_function: currentFunction
+	}, function(docstring) {
+		callback(docstring);
 	});
 }
 
@@ -314,4 +371,141 @@ function loadSearchResults() {
 
 function loadCallGraph() {
 	window.open(window.location.origin + '/_flow_tree')
+}
+
+function setupBottomBox(lineno) {
+	var corrLineno = lineno - 1;
+	var codeTextArray = updateLocalCodeText();
+	var declStartLineno = getDeclLineno(codeTextArray, corrLineno);
+
+	var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
+	var functionName = JSON.parse(sessionStorage.getItem("currentFunction"));
+
+	for (var i in functionsInFile) {
+		var functionObj = functionsInFile[i];
+		if (functionObj.functionName == functionName) {
+			var docstringLength = functionObj.docstringLength;
+			break;
+		}
+	}
+
+	if (!docstringLength) {
+		addDocstring(codeTextArray, declStartLineno, functionName);
+		codeTextArray = updateLocalCodeText();
+	}
+
+	var docstring = codeTextArray.slice(declStartLineno, Infinity)
+									.join("\n")
+									.match(docstringRegex)[0];
+	var docstringNoQuotes = docstring.slice(3,docstring.length - 3);
+	$(".one-line-text").val(docstringNoQuotes);
+
+	$(".one-line-text").off('keyup');
+	$(".one-line-text").on('keyup', function () {
+		var docstringStartLineno = declStartLineno + 1;
+
+		var userInput = $(".one-line-text").val(),
+			userInputArray = userInput.split(" "),
+			docstringLine = "",
+			docstringArray = [];
+
+		for (var i in userInputArray) {
+			var word = userInputArray[i];
+			if (docstringLine.length + word.length > 79) {
+				console.log("ping!")
+				docstringArray.push(docstringLine);
+				docstringLine = word + " ";
+			}
+			else {
+				docstringLine += word + " ";
+			}
+			if (i == userInputArray.length - 1) {
+				docstringLine = docstringLine.slice(0, docstringLine.length - 2);
+			}
+		}
+		docstringArray.push(docstringLine);
+
+		var docstringFormatted = "\"\"\"" + docstringArray.join("\n");
+
+		if (docstringArray.length > 1) {
+			docstringFormatted += "\n";
+		}
+
+		docstringFormatted += "\"\"\"" + "\n";
+
+		var newNumOfLines = docstringFormatted.split("\n").length - 1;
+
+		var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
+
+		for (var i in functionsInFile) {
+			var functionObj = functionsInFile[i];
+			if (functionObj.functionName == functionName) {
+				var oldNumOfLines = functionObj.docstringLength;
+				functionObj.docstringLength = newNumOfLines;
+			}
+		}
+
+		sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
+		// // editor.getDoc().replaceRange("", {ch: 0, line: docstringStartLineno}, {ch: 0, line: docstringStartLineno + numOfLines});
+		editor.getDoc().replaceRange(docstringFormatted, {ch: 0, line: docstringStartLineno}, {ch: 0, line: docstringStartLineno + oldNumOfLines});
+		console.log(docstringStartLineno, docstringStartLineno + oldNumOfLines, docstringFormatted.split("\n"))
+	});
+}
+
+function updateLocalCodeText() {
+	var localCodeText = editor.getDoc().getValue();
+	var codeTextArray = localCodeText.split("\n");
+
+	return codeTextArray;
+}
+
+function addDocstring(codeTextArray, declStartLineno, functionName) {
+	var docstringStartLineno = declStartLineno + 1;
+	var emptyDocstring = "\"\"\"\"\"\"\n";
+
+	var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
+
+	for (var i in functionsInFile) {
+		var functionObj = functionsInFile[i];
+		if (functionObj.lineno > docstringStartLineno) {
+			functionObj.lineno++;
+		}
+		if (functionObj.functionName == functionName) {
+			functionObj.docstringLength = 1;
+		}
+	}
+
+	sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
+	editor.getDoc().replaceRange(emptyDocstring, {ch: 0, line: docstringStartLineno});
+}
+
+function isGoodDocstring(docstring) {
+
+}
+
+function getDeclLineno(codeTextArray, lineno) {
+
+	while(true) {
+		var testLine = codeTextArray[lineno];
+		var isFuncDeclLine = testLine.search(functionRegex);
+		var isClassDeclLine = testLine.search(classRegex);
+
+		if (isFuncDeclLine != -1 || isClassDeclLine != -1) {
+			return lineno;
+		}
+		else {
+			lineno++;
+		}
+	}
+}
+
+function getDocstringEndLineno(codeTextArray, lineno, docstringEndRegex) {
+
+	for (var lineno = lineno + 1; lineno < codeTextArray.length; lineno++) {
+		var testLine = codeTextArray[lineno];
+		var matches = testLine.match(docstringEndRegex);
+		if (matches && matches.length == 1) {
+			return lineno;
+		}
+	}
 }
