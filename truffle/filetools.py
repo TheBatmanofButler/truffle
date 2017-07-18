@@ -40,6 +40,10 @@ def _is_excluded(text):
 
     return False
 
+def _get_dom_id(file_name_unformatted):
+    dom_id = "FILE" + file_name_unformatted.replace("/", "-").replace(".", "-")
+    return dom_id
+
 def _get_directory_tree(path):
     """Helper function for get_directory_tree"""
 
@@ -53,7 +57,7 @@ def _get_directory_tree(path):
                 tree["children"].append(_get_directory_tree(filename))
         else:
             if _is_included(name):
-                tree["children"].append({"name": filename, "short_name": _get_short_name(name), "count_id": global_constants.COUNT_ID})
+                tree["children"].append({"name": filename, "short_name": _get_short_name(name), "dom_id": _get_dom_id(filename)})
     return tree
 
 def get_directory_tree(path):
@@ -79,15 +83,15 @@ def needsDocumentation(docstring):
 
     return True
 
-def get_scan_data(directory_tree, project_index):
+def get_scan_path(directory_tree, project_index):
     """Returns list of functions to scan through"""
 
     node = directory_tree
 
     visited = set()
     stack = [node]
-    scan_functions = {}
     scan_path = []
+    tree_path = []
 
     while len(stack) > 0:
         node = stack.pop()
@@ -96,22 +100,26 @@ def get_scan_data(directory_tree, project_index):
         if node_name in visited:
             continue
 
+        if not os.path.isdir(node_name):
+            tree_path.append(node_name)
+            print node_name
+
         visited.add(node_name)
 
         if _is_commentable(node_name):
             key = _get_name(node_name)
-            scan_path.append(node_name)
-            scan_functions[key] = []
             file_data = project_index[key]["functions"]
+            unsorted_functions = []
+
             for function_name in file_data:
-                function_data = file_data[function_name]
-                lineno = function_data["lineno"]
-                scan_functions[key].append(lineno)
-            scan_functions[key].sort()
+                unsorted_functions.append(function_name)
+            sorted_functions = sorted(unsorted_functions, key=lambda k: file_data[k]["lineno"],
+    reverse=True)
+            scan_path.extend(sorted_functions)
 
         if "children" in node:
             for i in node["children"]:
                 if i["name"] not in visited:
                     stack.append(i)
 
-    return scan_functions, scan_path[::-1]
+    return scan_path[::-1], tree_path[::-1]

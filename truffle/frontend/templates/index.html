@@ -40,6 +40,7 @@
 	<body>
 
     <div class="container">
+
         <div class="container-left">
           <div class="file-panel">
             <ul class="primary">
@@ -55,8 +56,8 @@
 
                   <!-- iterate through directory_tree -->
                   {%- for item in directory_tree.children recursive %}
-                      {% if item.count_id %}
-                        <li id="item{{ item.count_id }}">
+                      {% if item.dom_id %}
+                        <li id="{{ item.dom_id }}">
                       {% else %}
                         <li>
                       {% endif %}
@@ -110,13 +111,19 @@
 
         <div class="container-right">
   				<div id="editor"></div>
+
           <div class="bottom-box">
-            <div class="one-line">
-              <div class="one-line-left">
-                <div class="one-line-text-wrapper">
-                  <textarea class="one-line-text" placeholder="Type docstring here"></textarea>
-                </div>
-                <div class="calling-functions-box">
+            <div class="bottom-box-inner">
+              <div class="bottom-box-tabs">
+                <div class="single-line-tab bottom-box-tab">Single-line</div>
+<!--                 <div class="multi-line-tab bottom-box-tab">Multi-line</div> -->
+                <div class="calling-functions-tab bottom-box-tab">Calling functions</div>
+              </div>
+
+              <div class="single-line bottom-box-option">
+
+                <div class="single-line-text-wrapper">
+                  <textarea class="single-line-text" placeholder="Type docstring here"></textarea>
                 </div>
                 <div class="scan-buttons">
                   <button type="button" class="previous-button">Previous</button>
@@ -124,29 +131,46 @@
                   <button type="button" class="end-scan-button">End Scan</button>
                 </div>
               </div>
-              <div class="one-line-right">
-                <div class="current-tags-wrapper">
-                  <textarea class="current-tags"></textarea>
+
+ <!--              <div class="multi-line bottom-box-option">
+                <div class="multi-line-desc-wrapper">
+                  <div class="multi-line-label">Description:</div>
+                  <textarea class="multi-line-desc-text" placeholder="Type description here"></textarea>
                 </div>
-                <div class="previous-tags-wrapper">
-                  <div class="previous-tags">
-                    <div class="previous-tag">one thing</div>
-                    <div class="previous-tag">another thing</div>
-                    <div class="previous-tag">a third thing</div>
-                    <div class="previous-tag">a third thing</div>
-                    <div class="previous-tag">a third thing</div>
-                    <div class="previous-tag">a third thing</div>
-                    <div class="previous-tag">a third thing</div>
-                    <div class="previous-tag">a third thing</div>
-                    <div class="previous-tag">a third thing</div>
-                  </div>
+                <div class="multi-line-args-wrapper">
+                  <textarea class="multi-line-desc-text" placeholder="Type description here"></textarea> -->
+                  <!-- <textarea class="multi-line-desc-text" placeholder="Type description here"></textarea>
+                </div>
+                <div class="multi-line-returns-wrapper">
+                  <div class="multi-line-label">Returns:</div>
+                  <textarea class="multi-line-returns-text" placeholder="Describe return value here"></textarea>
+                </div>
+                <div class="scan-buttons">
+                  <button type="button" class="previous-button">Previous</button>
+                  <button type="button" class="next-button">Next</button>
+                  <button type="button" class="end-scan-button">End Scan</button>
+                </div>
+              </div> -->
+
+              <div class="calling-functions bottom-box-option">
+
+                <div class="calling-functions-box">
+                </div>
+
+                <div class="scan-buttons">
+                  <button type="button" class="previous-button">Previous</button>
+                  <button type="button" class="next-button">Next</button>
+                  <button type="button" class="end-scan-button">End Scan</button>
                 </div>
               </div>
             </div>
+
 						<div class="call-box">
 							<span> Close </span>
 						</div>
+
           </div>
+
         </div>
 
 				<div class="search-overlay">
@@ -157,6 +181,10 @@
     </div>
 
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/global.js') }}"></script>
+    <!-- state variables from server -->
+    <script>
+      searchResults = {{ search_results | tojson | safe }};
+    </script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/hyperlink.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename = 'js/comments.js') }}"></script>
 		<script type="text/javascript" src="{{ url_for('static', filename = 'js/main.js') }}"></script>
