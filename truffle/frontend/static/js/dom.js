@@ -18,22 +18,16 @@ $( document ).ready(function() {
 		}
 	});
 
-	$('.current-tags').tagEditor({
-	    initialTags: [],
-	    delimiter: ', ', /* space and comma */
-	    placeholder: 'Add Category Tags'
-	});
-
 	$(".scan-option").click( function (e) {
 		var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
 		if (!scanOn) {
-			$(".one-line").show();
+			$(".bottom-box-inner").show();
 			$(".bottom-box").animate({height: "50%"}, function () {
 				startScan();
 			});
 		}
 		else {
-			$(".one-line").hide();
+			$(".bottom-box-inner").hide();
 			$(".bottom-box").animate({height: "0"}, function () {
 				endScan();
 			});
@@ -53,7 +47,7 @@ $( document ).ready(function() {
 	});
 
 	$(".end-scan-button").click( function () {
-		$(".one-line").hide();
+		$(".single-line").hide();
 		$(".bottom-box").animate({height: "0"}, function () {
 			endScan();
 		});
@@ -77,22 +71,53 @@ $( document ).ready(function() {
 		}
 	});
 
-	$(".search-overlay").click( function(e) {
+	$(".search-overlay").click( function (e) {
 		$('.search-overlay').fadeOut(function() {
 			$('.search').val('');
 		});
 	});
 
+	$(".bottom-box-tab").click( function (e) {
+		$(".bottom-box-tab").removeClass("selected");
+		$(this).addClass("selected");
+		changeBottomBox();
+	})
+
 	if (scanOn) {
-		$(".one-line").show();
+		$(".bottom-box-inner").show();
 		$(".bottom-box").animate({height: "50%"});
 	}
 	else {
-		$(".one-line").hide();
+		$(".bottom-box-inner").hide();
 		$(".bottom-box").animate({height: "0"});
 	}
 
 });
+
+function changeBottomBox() {
+	var classes = $(".selected").attr('class').split(' ');
+	var mode;
+	$(".bottom-box-option").hide();
+
+	if (classes.indexOf("single-line-tab") != -1) {
+		$(".single-line").show();
+		mode = 0;
+	}
+	else if (classes.indexOf("multi-line-tab") != -1) {
+		$(".multi-line").show();
+		mode = 1;
+	}
+	else {
+		$(".calling-functions").show();
+		mode = 2;
+	}
+
+	sessionStorage.setItem("commentBoxMode", JSON.stringify(mode));
+	var lineno = getLinenoFromStorage();
+	if (lineno) {
+		setupBottomBox(lineno);		
+	}
+}
 
 function setupFilePanel() {
 	$(".file-panel li").click(function (e) {

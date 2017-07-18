@@ -169,6 +169,11 @@ function getCodeText(callback) {
 function startScan() {
 	setScanPath( function(data) {
 		sessionStorage.setItem("scanOn", JSON.stringify(true));
+		sessionStorage.setItem("commentBoxMode", JSON.stringify(0));
+
+		if (!$(".selected").length) {
+			$(".single-line-tab").click();
+		}
 
 		var scanPath = data[0];
 		var treePath = data[1];
@@ -202,7 +207,9 @@ function getDocstringInfo(fileName, callback) {
 		for (var i in functionsInFile) {
 			var functionObj = functionsInFile[i];
 			var lineno = functionObj.lineno - 1;
-			var declStartLineno = getDeclLineno(codeTextArray, lineno);
+			var declInfo = getDeclLineno(codeTextArray, lineno);
+			var declStartLineno = declInfo[0];
+			var isFunction = declInfo[1];
 			var docstringStartLineno = declStartLineno + 1;
 			var docstring = codeTextArray.slice(docstringStartLineno, Infinity)
 										.join("\n")
@@ -270,7 +277,7 @@ function goToCommentable() {
 		}
 		else {
 			alert("Going to next page.")
-			$(".one-line").hide();
+			$(".single-line").hide();
 			$(".bottom-box").animate({height: "0"}, function () {
 				window.open(url, "_self");
 			});
@@ -283,8 +290,26 @@ function nextInScan(reverse) {
 	var scanPath = JSON.parse(sessionStorage.getItem("scanPath"));
 	var scanIndex = JSON.parse(sessionStorage.getItem("scanIndex"));
 	var scanStartIndex = JSON.parse(sessionStorage.getItem("scanStartIndex"));
+	var docstringOffset = JSON.parse(sessionStorage.getItem("docstringOffset"));
+	var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
 
-	// TO-DO: create cycle
+	var oldFunction = scanPath[scanIndex];
+	if (docstringOffset) {
+		for (var i in functionsInFile) {
+			var functionObj1 = functionsInFile[i];
+			if (functionObj1.functionName == oldFunction) {
+				for (var j in functionsInFile) {
+					var functionObj2 = functionsInFile[j];
+					if (functionObj2.lineno > functionObj1.lineno) {
+						functionObj2.lineno += docstringOffset;
+					}
+				}
+			}
+		}
+		sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
+		sessionStorage.setItem("docstringOffset", JSON.stringify(0));
+	}
+
 	if (reverse) {
 		scanIndex--;		
 	}
@@ -308,8 +333,8 @@ function nextInScan(reverse) {
 function endScan() {
 	console.log("Scan ended.")
 	
-	if ($(".one-line").is(":visible")) {
-		$(".one-line").hide();
+	if ($(".single-line").is(":visible")) {
+		$(".single-line").hide();
 		$(".bottom-box").animate({height: "0"});
 	}
 
@@ -376,7 +401,10 @@ function loadCallGraph() {
 function setupBottomBox(lineno) {
 	var corrLineno = lineno - 1;
 	var codeTextArray = updateLocalCodeText();
-	var declStartLineno = getDeclLineno(codeTextArray, corrLineno);
+	var declInfo = getDeclLineno(codeTextArray, corrLineno);
+	var declStartLineno = declInfo[0];
+	var isFunction = declInfo[1];
+	var indentation = codeTextArray[declStartLineno].match(indentationRegex)[0] + "    ";
 
 	var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
 	var functionName = JSON.parse(sessionStorage.getItem("currentFunction"));
@@ -390,66 +418,241 @@ function setupBottomBox(lineno) {
 	}
 
 	if (!docstringLength) {
-		addDocstring(codeTextArray, declStartLineno, functionName);
+		addDocstring(codeTextArray, declStartLineno, functionName, indentation);
 		codeTextArray = updateLocalCodeText();
+		var docstringLength = 1;
 	}
 
 	var docstring = codeTextArray.slice(declStartLineno, Infinity)
 									.join("\n")
 									.match(docstringRegex)[0];
-	var docstringNoQuotes = docstring.slice(3,docstring.length - 3);
-	$(".one-line-text").val(docstringNoQuotes);
+	var docstringNoQuotes = docstring.slice(3,docstring.length - 3)
 
-	$(".one-line-text").off('keyup');
-	$(".one-line-text").on('keyup', function () {
-		var docstringStartLineno = declStartLineno + 1;
+	var commentBoxMode = parseInt(JSON.parse(sessionStorage.getItem("commentBoxMode")));
+	if (commentBoxMode == 0) {
+		$(".single-line-text").val(docstringNoQuotes);
 
-		var userInput = $(".one-line-text").val(),
-			userInputArray = userInput.split(" "),
-			docstringLine = "",
-			docstringArray = [];
+		$(".single-line-text").off('keyup');
+		$(".single-line-text").on('keyup', function () {
+			var docstringStartLineno = declStartLineno + 1;
 
-		for (var i in userInputArray) {
-			var word = userInputArray[i];
-			if (docstringLine.length + word.length > 79) {
-				console.log("ping!")
-				docstringArray.push(docstringLine);
-				docstringLine = word + " ";
+			var userInput = $(".single-line-text").val(),
+				userInputArray = userInput.split(" "),
+				docstringLine = "",
+				docstringArray = [];
+
+			for (var i in userInputArray) {
+				var word = userInputArray[i];
+				if (docstringLine.length + word.length > 72 - indentation.length) {
+					console.log("ping!")
+					docstringArray.push(docstringLine);
+					docstringLine = indentation + word + " ";
+				}
+				else {
+					docstringLine += word + " ";
+				}
+				if (i == userInputArray.length - 1) {
+					docstringLine = docstringLine.slice(0, docstringLine.length - 1);
+				}
+			}
+			docstringArray.push(docstringLine);
+
+			var docstringFormatted = indentation + "\"\"\"" + docstringArray.join("\n");
+
+			if (docstringArray.length > 1) {
+				docstringFormatted += "\n" + indentation;
+			}
+
+			docstringFormatted += "\"\"\"" + "\n";
+
+			var newNumOfLines = docstringFormatted.split("\n").length - 1;
+
+			var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
+
+			for (var i in functionsInFile) {
+				var functionObj = functionsInFile[i];
+				if (functionObj.functionName == functionName) {
+					var oldNumOfLines = functionObj.docstringLength;
+					functionObj.docstringLength = newNumOfLines;
+				}
+			}
+
+			var docstringOffset = newNumOfLines - docstringLength;
+			sessionStorage.setItem("docstringOffset", JSON.stringify(docstringOffset));
+			sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
+			// // editor.getDoc().replaceRange("", {ch: 0, line: docstringStartLineno}, {ch: 0, line: docstringStartLineno + numOfLines});
+			editor.getDoc().replaceRange(docstringFormatted, {ch: 0, line: docstringStartLineno}, {ch: 0, line: docstringStartLineno + oldNumOfLines});
+			console.log(docstringStartLineno, newNumOfLines, docstringFormatted.split("\n"))
+		});
+	}
+	else if (commentBoxMode == 1) {
+		var docstringFields = functionFormatParse(docstringNoQuotes);
+		// if (isFunction) {
+			if (docstringFields.desc) {
+				var docstringDesc = docstringFields.desc;
+				$(".multi-line-desc-text").val(docstringDesc);
 			}
 			else {
-				docstringLine += word + " ";
+				$(".multi-line-desc-text").val("");
 			}
-			if (i == userInputArray.length - 1) {
-				docstringLine = docstringLine.slice(0, docstringLine.length - 2);
+			
+			$(".multi-line-args-wrapper").empty();
+			if (docstringFields.args) {
+				var docstringArgs = docstringFields.args;
+				for (var arg in docstringArgs) {
+
+     				$container = document.createElement("div")
+
+     				$label = document.createElement("div")
+     				$($label).text(docstringArgs[arg][0] + ":").attr("class", "multi-line-label");
+
+     				$textarea = document.createElement("textarea")
+     				$($textarea).text(docstringArgs[arg][1]).attr("class", "multi-line-args-text")
+
+     				$container.append($label);
+     				$container.append($textarea);
+					$(".multi-line-args-wrapper").append($container);
+
+					console.log(arg, docstringArgs[arg]);
+				}
 			}
-		}
-		docstringArray.push(docstringLine);
-
-		var docstringFormatted = "\"\"\"" + docstringArray.join("\n");
-
-		if (docstringArray.length > 1) {
-			docstringFormatted += "\n";
-		}
-
-		docstringFormatted += "\"\"\"" + "\n";
-
-		var newNumOfLines = docstringFormatted.split("\n").length - 1;
-
-		var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
-
-		for (var i in functionsInFile) {
-			var functionObj = functionsInFile[i];
-			if (functionObj.functionName == functionName) {
-				var oldNumOfLines = functionObj.docstringLength;
-				functionObj.docstringLength = newNumOfLines;
+			
+			if (docstringFields.returns) {
+				var docstringReturns = docstringFields.returns;
+				$(".multi-line-returns-text").val(docstringReturns);
+				console.log(docstringFields.returns)
 			}
-		}
+			else {
+				$(".multi-line-returns-text").val("");
+			}
+		// }
+		$(".multi-line-text").on('keyup', function () {
+			var docstringStartLineno = declStartLineno + 1;
 
-		sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
-		// // editor.getDoc().replaceRange("", {ch: 0, line: docstringStartLineno}, {ch: 0, line: docstringStartLineno + numOfLines});
-		editor.getDoc().replaceRange(docstringFormatted, {ch: 0, line: docstringStartLineno}, {ch: 0, line: docstringStartLineno + oldNumOfLines});
-		console.log(docstringStartLineno, docstringStartLineno + oldNumOfLines, docstringFormatted.split("\n"))
-	});
+			var declInput = $(".multi-line-desc-text").val(),
+				declInputArray = userInput.split(" "),
+				docstringLine = "",
+				docstringArray = [];
+
+			for (var i in declInputArray) {
+				var word = declInputArray[i];
+				if (docstringLine.length + word.length > 72 - indentation.length) {
+					console.log("ping!")
+					docstringArray.push(docstringLine);
+					docstringLine = indentation + word + " ";
+				}
+				else {
+					docstringLine += word + " ";
+				}
+				if (i == declInputArray.length - 1) {
+					docstringLine = docstringLine.slice(0, docstringLine.length - 1);
+				}
+			}
+			docstringArray.push(docstringLine);
+
+			var docstringFormatted = indentation + "\"\"\"" + docstringArray.join("\n");
+
+			if (docstringArray.length > 1) {
+				docstringFormatted += "\n" + indentation;
+			}
+
+			docstringFormatted += "\"\"\"" + "\n";
+
+			var newNumOfLines = docstringFormatted.split("\n").length - 1;
+
+			var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
+
+			for (var i in functionsInFile) {
+				var functionObj = functionsInFile[i];
+				if (functionObj.functionName == functionName) {
+					var oldNumOfLines = functionObj.docstringLength;
+					functionObj.docstringLength = newNumOfLines;
+				}
+			}
+
+			var docstringOffset = newNumOfLines - docstringLength;
+			sessionStorage.setItem("docstringOffset", JSON.stringify(docstringOffset));
+			sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
+			// // editor.getDoc().replaceRange("", {ch: 0, line: docstringStartLineno}, {ch: 0, line: docstringStartLineno + numOfLines});
+			editor.getDoc().replaceRange(docstringFormatted, {ch: 0, line: docstringStartLineno}, {ch: 0, line: docstringStartLineno + oldNumOfLines});
+			console.log(docstringStartLineno, newNumOfLines, docstringFormatted.split("\n"))
+
+		});
+	}
+}
+
+function functionFormatParse(docstring) {
+
+	var returnVal = {
+		desc: null,
+		args: null,
+		raises: null,
+		returns: null
+	}
+
+	var docstringFields = docstring.split("\n\n");
+
+	for (var i in docstringFields) {
+		var field = docstringFields[i];
+		if (field.indexOf("Args:") != -1) {
+			var paramsIn = field.split("\n").slice(1,Infinity);
+			var paramsOut = []
+			for (var j in paramsIn) {
+				var line = paramsIn[j];
+				var isParamDecl = line.match(/[\s\S]*:[\s\S]*/);
+				if (isParamDecl) {
+				console.log(line)
+					paramsOut.push(isParamDecl[0])
+				}
+				else {
+				console.log(line)
+					paramsOut[0] += " " + line.replace(/^\s+|\s+$/gm,'');
+				}
+			}
+
+			var paramArray = []
+			for (var k in paramsOut) {
+				var paramTuple = paramsOut[k].split(":");
+				var paramName = paramTuple[0].replace(/^\s+|\s+$/gm,'');
+				var paramDesc = paramTuple[1].replace(/^\s+|\s+$/gm,'');
+				paramArray.push([paramName, paramDesc]);
+			}
+
+			returnVal.args = paramArray;
+		}
+		else if (field.indexOf("Returns:") != -1) {
+			returnVal.returns = field.split(":")[1].replace(/^\s+|\s+$/gm,'');
+		}
+		else if (field.indexOf("Raises:") != -1) {
+			var errorsIn = field.split("\n").slice(1,Infinity);
+			var errorsOut = []
+			for (var j in errorsIn) {
+				var line = errorsIn[j];
+				var isErrorDecl = line.match(/[\s\S]*:[\s\S]*/);
+				if (isErrorDecl) {
+					errorsOut.unshift(isErrorDecl[0])
+				}
+				else {
+					errorsOut[0] += " " + line.replace(/^\s+|\s+$/gm,'');
+				}
+			}
+
+			var errorMap = {}
+			for (var k in errorsOut) {
+				var errorArray = errorsOut[k].split(":");
+				var errorName = errorArray[0].replace(/^\s+|\s+$/gm,'');
+				var errorDesc = errorArray[1].replace(/^\s+|\s+$/gm,'');
+				errorMap[errorName] = errorDesc;
+			}
+
+			returnVal.raises = errorMap;
+		}
+		else {
+			returnVal.desc = field.replace(/^\s+|\s+$/gm,'');
+		}
+	}
+
+	return returnVal;
 }
 
 function updateLocalCodeText() {
@@ -459,28 +662,23 @@ function updateLocalCodeText() {
 	return codeTextArray;
 }
 
-function addDocstring(codeTextArray, declStartLineno, functionName) {
+function addDocstring(codeTextArray, declStartLineno, functionName, indentation) {
 	var docstringStartLineno = declStartLineno + 1;
-	var emptyDocstring = "\"\"\"\"\"\"\n";
+	var emptyDocstring = indentation + "\"\"\"\"\"\"\n";
 
 	var functionsInFile = JSON.parse(sessionStorage.getItem("functionsInFile"));
 
 	for (var i in functionsInFile) {
 		var functionObj = functionsInFile[i];
-		if (functionObj.lineno > docstringStartLineno) {
-			functionObj.lineno++;
-		}
 		if (functionObj.functionName == functionName) {
 			functionObj.docstringLength = 1;
 		}
 	}
 
+	var docstringOffset = 1;
+	sessionStorage.setItem("docstringOffset", JSON.stringify(docstringOffset));
 	sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
 	editor.getDoc().replaceRange(emptyDocstring, {ch: 0, line: docstringStartLineno});
-}
-
-function isGoodDocstring(docstring) {
-
 }
 
 function getDeclLineno(codeTextArray, lineno) {
@@ -490,8 +688,11 @@ function getDeclLineno(codeTextArray, lineno) {
 		var isFuncDeclLine = testLine.search(functionRegex);
 		var isClassDeclLine = testLine.search(classRegex);
 
-		if (isFuncDeclLine != -1 || isClassDeclLine != -1) {
-			return lineno;
+		if (isFuncDeclLine != -1) {
+			return [lineno, true];
+		}
+		else if (isClassDeclLine != -1) {
+			return [lineno, false];
 		}
 		else {
 			lineno++;
