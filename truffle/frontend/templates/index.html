@@ -30,7 +30,9 @@
       sessionStorage.setItem("fileName", JSON.stringify({{ file_name | tojson | safe }}));
       sessionStorage.setItem("lineno", JSON.stringify({{ lineno | tojson | safe }}));
       sessionStorage.setItem("directoryTree", JSON.stringify({{ directory_tree | tojson | safe }}));
+			var fileIndex = {{ file_index | tojson | safe}}
 			var searchResults = {{ search_results | tojson | safe }};
+			var indexFname = {{ index_fname | tojson | safe }};
     </script>
 
 	</head>
@@ -141,6 +143,9 @@
                 </div>
               </div>
             </div>
+						<div class="call-box">
+							<span> Close </span>
+						</div>
           </div>
         </div>
 

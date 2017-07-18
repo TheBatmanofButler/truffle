@@ -120,3 +120,14 @@ class ProjectIndex(object):
     def get_text_search(self, query):
         """ Gets the text search hits """
         return text_index.search_text(self.text_searcher, query)
+
+    def get_file_index(self, fname):
+        """Gets an index for a file."""
+        # Remove slashes.
+        fname = fname.replace('/', '.')
+        # Remove extension.
+        fname = '.'.join(fname.split('.')[:-1])
+        if fname in self.project_index:
+            return self.project_index[fname], fname
+        else:
+            return None, None

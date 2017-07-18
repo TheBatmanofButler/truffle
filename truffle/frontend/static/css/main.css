@@ -196,13 +196,13 @@ ul {
 	padding: 1%;
 }
 
-.one-line-text-wrapper {
-	width: 100%;
-}
+	.one-line-text-wrapper {
+		width: 100%;
+	}
 
-.one-line-text {
-	width: 100%;
-}
+	.one-line-text {
+		width: 100%;
+	}
 
 textarea {
 	font-family: 'Source Code Pro', monospace;
@@ -249,6 +249,14 @@ button {
     height: 100%;
 
 	padding: 1% 1% 1% 0;
+}
+
+.call-box {
+	display: none;
+	width: 90%;
+	height: 82%;
+	margin: 5%;
+	background-color: white;
 }
 
 .current-tags-wrapper {
@@ -312,7 +320,17 @@ button {
 			padding: 12px 20px 12px 40px;
 		}	
 
-		.search-result {
+		.search-result-link {
+			color: white
+		}
+
+		.search-result-highlight {
 			height: 10%;
 			font-family: Consolas, monaco, monospace;
 		}
+
+
+.cm-index-link:hover {
+	text-decoration: underline;
+	color: white;
+}

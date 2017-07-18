@@ -67,7 +67,8 @@ function setupCodeMirror() {
 		editor.execCommand("save");
 	});
 
-	// hyperlinkOverlay(editor);
+	if (fileIndex)
+		processFileIndex()
 
 	if (scanOn) {
 		editor.setOption("readOnly", true);
@@ -319,13 +320,21 @@ function runSearch(query) {
 function loadSearchResults() {
 	console.log(searchResults);
 	for (hit in searchResults) {
-		$('#editor').append('<div class="search-result-file">' + hit + '<br></div>')
-		$('#editor').append('<div class="search-result">' + searchResults[
-			hit]['highlight'] + '<br></div>')
+		hit_href = window.location.origin + hit
+		$('#editor').append(
+			'<a class="search-result-link" href="' + hit_href + '">' +
+			'<div class="search-result-file">' + hit + '<br></div>' +
+			'<div class="search-result-highlight">' + searchResults[hit][
+				'highlight'] + '<br></div>' +
+			'<a>');
 		console.log(hit)
 	}
 }
 
 function loadCallGraph() {
 	window.open(window.location.origin + '/_flow_tree')
+}
+
+function processFileIndex() {
+	hyperlinkOverlay(editor);
 }

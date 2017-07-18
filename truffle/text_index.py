@@ -37,7 +37,7 @@ def search_text(ix, user_query):
     """Searches all indexed files and returns paths of hits."""
     with ix.searcher() as searcher:
         query = QueryParser("content", ix.schema).parse(user_query)
-        results = searcher.search(query)
+        results = searcher.search(query, limit=None)
         results.fragmenter.charlimit = None
         returned_results = {}
         for result in results:
