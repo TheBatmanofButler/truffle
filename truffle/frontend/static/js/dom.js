@@ -85,6 +85,7 @@ $( document ).ready(function() {
 
 	if (scanOn) {
 		$(".bottom-box-inner").show();
+		$(".single-line").show();
 		$(".bottom-box").animate({height: "50%"});
 	}
 	else {

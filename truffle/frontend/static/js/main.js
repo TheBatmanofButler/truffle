@@ -70,6 +70,9 @@ function setupCodeMirror() {
 			editor.execCommand("save");
 		});
 
+		if (fileIndex)
+			processFileIndex()
+
 		var scanOn = JSON.parse(sessionStorage.getItem("scanOn"));
 
 		if (scanOn) {
@@ -81,18 +84,7 @@ function setupCodeMirror() {
 		}
 	})
 
-	$(".save-option").click( function (e) {
-		editor.execCommand("save");
-	});
-
-	if (fileIndex)
-		processFileIndex()
-
-	if (scanOn) {
-		editor.setOption("readOnly", true);
-		editor.setOption("cursorBlinkRate", -1);
 }
-
 
 function removeCurrentLineStyling() {
 	var lineno = getLinenoFromURL()
@@ -277,11 +269,11 @@ function getLinenoFromStorage() {
 
 function goToCommentable() {
 	getFileNameFromServer( function(nextFile) {
-		var lineno = getLinenoFromStorage();
-		console.log(lineno);
-		var url = window.location.origin + nextFile + "." + lineno;
 
 		if (getFileNameFromURL() == nextFile) {
+			var lineno = getLinenoFromStorage();
+			console.log(lineno);
+			var url = window.location.origin + nextFile + "." + lineno;
 			editor.setOption("readOnly", true);
 			editor.setOption("cursorBlinkRate", -1);
 
@@ -289,10 +281,18 @@ function goToCommentable() {
 			window.history.pushState("", "", url);
 		}
 		else {
-			alert("Going to next page.")
-			$(".single-line").hide();
-			$(".bottom-box").animate({height: "0"}, function () {
-				window.open(url, "_self");
+			getDocstringInfo(nextFile, function() {
+
+				var lineno = getLinenoFromStorage();
+				console.log(lineno);
+				var url = window.location.origin + nextFile + "." + lineno;
+
+
+				alert("Going to next page.")
+				$(".single-line").hide();
+				$(".bottom-box").animate({height: "0"}, function () {
+					window.open(url, "_self");
+				});
 			});
 		}
 	})
@@ -340,11 +340,7 @@ function nextInScan(reverse) {
 	var currentFunction = scanPath[scanIndex];
 	sessionStorage.setItem("currentFunction", JSON.stringify(currentFunction));
 
-	getFileNameFromServer( function(nextFile) {
-		getDocstringInfo(nextFile, function() {
-			goToCommentable();
-		});
-	});
+	goToCommentable();
 }
 
 function endScan() {
