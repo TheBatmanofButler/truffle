@@ -45,7 +45,7 @@ function setupCodeMirror() {
 		postSavedFile(fileName, instance.getValue());
 	}
 
-	getCodeText( function(codeText) {
+	getCodeText(fileName, function(codeText) {
 
 		// global var
 		editor = CodeMirror(document.getElementById("editor"), {
@@ -157,8 +157,7 @@ function getLinenoFromServer(functionName, callback) {
 	});
 }
 
-function getCodeText(callback) {
-	var fileName = getFileNameFromURL();
+function getCodeText(fileName, callback) {
 	$.getJSON('/_get_code_text', {
 		file_name: fileName
 	}, function(codeText) {
@@ -201,35 +200,37 @@ function getFunctionsInFileFromServer(fileName, callback) {
 
 function getDocstringInfo(fileName, callback) {
 	getFunctionsInFileFromServer(fileName, function(functionsInFile) {
-		var codeTextArray =	updateLocalCodeText();
-		var docstringInfo = [];
+		getCodeText(fileName, function(codeText) {
 
-		for (var i in functionsInFile) {
-			var functionObj = functionsInFile[i];
-			var lineno = functionObj.lineno - 1;
-			var declInfo = getDeclLineno(codeTextArray, lineno);
-			var declStartLineno = declInfo[0];
-			var isFunction = declInfo[1];
-			var docstringStartLineno = declStartLineno + 1;
-			var docstring = codeTextArray.slice(docstringStartLineno, Infinity)
-										.join("\n")
-										.match(docstringFromStartRegex);
-			if (docstring) {
-				var docstringLength = docstring[0].split("\n").length;
-				functionsInFile[i].docstringLength = docstringLength;
+			var codeTextArray =	codeText.split("\n");
+			var docstringInfo = [];
+
+			for (var i in functionsInFile) {
+				var functionObj = functionsInFile[i];
+				var lineno = functionObj.lineno - 1;
+				var declInfo = getDeclLineno(codeTextArray, lineno);
+				var declStartLineno = declInfo[0];
+				var isFunction = declInfo[1];
+				var docstringStartLineno = declStartLineno + 1;
+				var docstring = codeTextArray.slice(docstringStartLineno, Infinity)
+											.join("\n")
+											.match(docstringFromStartRegex);
+				if (docstring) {
+					var docstringLength = docstring[0].split("\n").length;
+					functionsInFile[i].docstringLength = docstringLength;
+				}
+				else {
+					functionsInFile[i].docstringLength = false;
+				}
 			}
-			else {
-				functionsInFile[i].docstringLength = false;
-			}
-		}
-		sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
-		callback();
+			sessionStorage.setItem("functionsInFile", JSON.stringify(functionsInFile));
+			callback();
+		});
 	})
 }
 
 function getScanStartIndex(scanPath, treePath) {
 	var treeIndex = treePath.indexOf(getFileNameFromURL());
-	var treePath = JSON.parse(sessionStorage.getItem("treePath"));
 
 	var j = treeIndex;
 
@@ -266,6 +267,7 @@ function getLinenoFromStorage() {
 function goToCommentable() {
 	getFileNameFromServer( function(nextFile) {
 		var lineno = getLinenoFromStorage();
+		console.log(lineno);
 		var url = window.location.origin + nextFile + "." + lineno;
 
 		if (getFileNameFromURL() == nextFile) {
@@ -327,7 +329,11 @@ function nextInScan(reverse) {
 	var currentFunction = scanPath[scanIndex];
 	sessionStorage.setItem("currentFunction", JSON.stringify(currentFunction));
 
-	goToCommentable();
+	getFileNameFromServer( function(nextFile) {
+		getDocstringInfo(nextFile, function() {
+			goToCommentable();
+		});
+	});
 }
 
 function endScan() {
