@@ -43,7 +43,7 @@ function setupCodeMirror() {
 
 	CodeMirror.commands.save = function(instance) {
 		postSavedFile(fileName, instance.getValue());
-	}
+	};
 
 	getCodeText(fileName, function(codeText) {
 
@@ -288,7 +288,8 @@ function goToCommentable() {
 				var url = window.location.origin + nextFile + "." + lineno;
 
 
-				alert("Going to next page.")
+				alert("Going to next page.");
+				editor.execCommand("save");
 				$(".single-line").hide();
 				$(".bottom-box").animate({height: "0"}, function () {
 					window.open(url, "_self");
