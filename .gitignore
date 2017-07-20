@@ -9,3 +9,5 @@ indexdir
 /dist/
 
 /*.egg-info
+
+build/

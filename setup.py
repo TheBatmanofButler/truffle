@@ -11,7 +11,7 @@ setup(name='truffle',
       entry_points={
           'console_scripts': ['truffle=truffle.app:main'],
       },
-      url='',
+      url='http://truffle.1train.tech',
       author='1traintech',
       author_email='onetraintech@gmail.com',
       packages=setuptools.find_packages(),
