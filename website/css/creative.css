@@ -231,6 +231,7 @@ header .header-content .header-content-inner p {
 	padding: 10px;
 	background-color: #254d32;
   margin: 0 auto;
+	overflow: hidden;
 }
 
 .portfolio-box img {
