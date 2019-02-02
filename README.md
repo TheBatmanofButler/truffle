@@ -6,7 +6,13 @@ Currently, the project features are best equipped to handle Python code, with mu
 
 ## Features
 - Browser-based - Feel free to use Truffle with your favorite browser, without having to switch applications between your code and web project
+![Screenshot](readme_images/truffle.png)
+
 - Rapid Commenting - Quickly document your Python code, and add tags for organization.
-- LXR Style Indexing - Find source locations for all python* functions. Soon to include variables and class members.
-- Code Visualization - Visualize your python* code to find common call flows and identify how the complex pieces combine to form a working whole.
+![Commenting demo](readme_images/commenting.gif)
+
+- Code Visualization - Visualize your Python code to find common call flows and identify how the complex pieces combine to form a working whole.
+![Visualization demo](readme_images/vis.gif)
+
 - Full Code Search - As said on the box. Full code text search.
+![Search demo](readme_images/search.gif)
