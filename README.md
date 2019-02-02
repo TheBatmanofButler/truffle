@@ -6,7 +6,7 @@ Currently, the project features are best equipped to handle Python code, with mu
 
 ## Features
 ### Browser-based
-Feel free to use Truffle with your favorite browser, without having to switch applications between your code and web project
+Feel free to use Truffle with your favorite browser, without having to switch applications between your code and web project.
 
 ![Screenshot](readme_images/truffle.jpg)
 
@@ -24,6 +24,5 @@ Visualize your Python code to find common call flows and identify how the comple
 
 
 ### Full Code Search
-As said on the box. Full code text search.
 
 ![Search demo](readme_images/search.gif)
