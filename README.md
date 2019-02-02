@@ -5,14 +5,25 @@ Truffle is a browser-based code editor that harnesses Flask and CodeMirror to cr
 Currently, the project features are best equipped to handle Python code, with multilanguage support in the works.
 
 ## Features
-- Browser-based - Feel free to use Truffle with your favorite browser, without having to switch applications between your code and web project
+### Browser-based
+Feel free to use Truffle with your favorite browser, without having to switch applications between your code and web project
+
 ![Screenshot](readme_images/truffle.jpg)
 
-- Rapid Commenting - Quickly document your Python code, and add tags for organization.
+
+### Rapid Commenting
+Quickly document your Python code, and add tags for organization.
+
 ![Commenting demo](readme_images/commenting.gif)
 
-- Code Visualization - Visualize your Python code to find common call flows and identify how the complex pieces combine to form a working whole.
+
+### Code Visualization
+Visualize your Python code to find common call flows and identify how the complex pieces combine to form a working whole.
+
 ![Visualization demo](readme_images/vis.gif)
 
-- Full Code Search - As said on the box. Full code text search.
+
+### Full Code Search
+As said on the box. Full code text search.
+
 ![Search demo](readme_images/search.gif)
