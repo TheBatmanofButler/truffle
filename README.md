@@ -6,7 +6,7 @@ Currently, the project features are best equipped to handle Python code, with mu
 
 ## Features
 - Browser-based - Feel free to use Truffle with your favorite browser, without having to switch applications between your code and web project
-![Screenshot](readme_images/truffle.png)
+![Screenshot](readme_images/truffle.jpg)
 
 - Rapid Commenting - Quickly document your Python code, and add tags for organization.
 ![Commenting demo](readme_images/commenting.gif)
